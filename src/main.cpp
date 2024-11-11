@@ -45,6 +45,7 @@ int main(int argc, char** argv)
     std::string token = "";
     std::string id = "myid";
     bot.init(token, id);
+
 //    bot.set_mqtt_handler(&m_handler);
 
 //    m_handler.set_discord_bot(&bot);

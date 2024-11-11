@@ -4,10 +4,6 @@
  * implementation of CDB_DiscordBot methods
  */
 
-#include "dpp/dpp.h"
-#include "dpp/restresults.h"
-#include "dpp/guild.h"
-
 #include <stdio.h>
 #include <map>
 
@@ -288,6 +284,8 @@ void luxbracer::DiscordBot::init(std::string token, std::string bot_id)
     });
 
     bot->start(dpp::st_return);
+
+    channel_create(bot, "test");
 }
 
 //void luxbracer::DiscordBot::set_mqtt_handler(luxbracer::CallbackClass * m_handler)

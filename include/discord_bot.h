@@ -9,6 +9,10 @@
 #ifndef DISCORD_BOT__H
 #define DISCORD_BOT__H
 
+#include "dpp/dpp.h"
+#include "dpp/restresults.h"
+#include "dpp/guild.h"
+
 //#include "cdb_logger.h"
 //#include "cdb_mqtt_handler.h"
 
@@ -57,6 +61,13 @@ namespace luxbracer {
              * @param msg The message information
              */
 //            void message_cb(cdb::callback_msg *msg);
+
+            /**
+             * @brief Create a channel
+             *
+             * @param name The channel name
+             */
+            void channel_create(dpp::cluster *, std::string name);
 
             /**
              * @brief Getter function for the bot id
