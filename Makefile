@@ -1,0 +1,49 @@
+# LuxBracer
+
+SRCDIR = src
+INCDIR = include
+OBJDIR = obj
+BINDIR = bin
+DOCDIR = doc
+
+DOX = doxygen
+DOXYFILE = Doxyfile
+
+CC = g++
+CFLAGS = -Wall -g -std=c++17 -Wno-psabi
+INCLUDES = -I$(INCDIR) \
+
+LIB = -ldpp \
+      -pthread \
+
+FILES = main.cpp discord_bot.cpp
+
+SRC = $(addprefix $(SRCDIR)/,$(FILES))
+OBJ = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o, $(SRC))
+BIN = $(BINDIR)/luxbot
+
+.PHONY: all clean dox
+
+all: $(BIN)
+
+$(BIN): $(OBJ) | $(BINDIR)
+	$(CC) -o $(BIN) $(OBJ) $(LIB)
+
+$(OBJ): $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	$(CC) -o $@ $(CFLAGS) $(INCLUDES) -c $<
+
+$(OBJDIR):
+	@mkdir -p $(OBJDIR)
+
+$(BINDIR):
+	@mkdir -p $(BINDIR)
+
+$(DOCDIR):
+	@mkdir -p $(DOCDIR)
+
+clean:
+	@rm -rf $(OBJDIR) $(BINDIR)
+
+dox:  | $(DOCDIR)
+	@rm -rf $(DOCDIR)
+	$(DOX) $(DOXYFILE)
