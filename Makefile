@@ -14,9 +14,9 @@ CFLAGS = -Wall -g -std=c++17 -Wno-psabi
 INCLUDES = -I$(INCDIR) \
 
 LIB = -ldpp \
-      -pthread \
+#      -pthread \
 
-FILES = main.cpp discord_bot.cpp
+FILES = main.cpp discord_main.cpp discord_channels.cpp
 
 SRC = $(addprefix $(SRCDIR)/,$(FILES))
 OBJ = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o, $(SRC))
