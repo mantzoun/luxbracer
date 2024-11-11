@@ -63,6 +63,7 @@ namespace luxbracer {
 //            void message_cb(cdb::callback_msg *msg);
 
             /**
+
              * @brief Create a channel
              *
              * @param name The channel name
@@ -70,6 +71,7 @@ namespace luxbracer {
             void channel_create(dpp::cluster *, std::string name);
 
             /**
+
              * @brief Getter function for the bot id
              *
              * @return The bot id

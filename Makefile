@@ -14,7 +14,6 @@ CFLAGS = -Wall -g -std=c++17 -Wno-psabi
 INCLUDES = -I$(INCDIR) \
 
 LIB = -ldpp \
-#      -pthread \
 
 FILES = main.cpp discord_main.cpp discord_channels.cpp
 
