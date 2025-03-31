@@ -9,12 +9,16 @@
 #ifndef DISCORD_BOT__H
 #define DISCORD_BOT__H
 
+#include <map>
+
 #include "dpp/dpp.h"
 #include "dpp/restresults.h"
 #include "dpp/guild.h"
 
-//#include "cdb_logger.h"
-//#include "cdb_mqtt_handler.h"
+#include "lux_logger.h"
+
+#include "discord_guild.h"
+#include "discord_channel.h"
 
 namespace luxbracer {
     /**
@@ -27,9 +31,10 @@ namespace luxbracer {
     class DiscordBot //: public luxbracer::CallbackClass
     {
         private:
-//            cdb::Logger * logger = NULL;
+            Logger * logger = NULL;
 //            cdb::CallbackClass * m_handler = NULL;
             std::string _bot_id;
+            std::map<dpp::snowflake, DiscordGuild *> guildMap;
 
         public:
             DiscordBot(void);
@@ -41,19 +46,29 @@ namespace luxbracer {
              */
             void init(std::string token, std::string bot_id);
 
+            void add_guild(dpp::snowflake);
+
+            void add_channel(std::string name, dpp::snowflake guild_id, dpp::snowflake channel, dpp::snowflake parent_id);
+
             /**
              * @brief set the logger object
              *
              * @param logger The logger object
              */
-//            void set_logger(cdb::Logger * logger);
+            void set_logger(Logger * logger);
 
             /**
-             * @brief set the MQTT handler
-             *
-             * @param m_handler the MQTT handler object
+             * @brief register commands
+             ()
              */
-//            void set_mqtt_handler(cdb::CallbackClass * m_handler);
+            void slash_commands_register(dpp::snowflake guild_id);
+
+            
+            /**
+             * @brief handle commands
+             ()
+             */
+            void slash_commands_handle(const dpp::slashcommand_t & event);
 
             /**
              * @brief Post a message to discord
@@ -65,9 +80,28 @@ namespace luxbracer {
             /**
              * @brief Create a channel
              *
+             * @param guild_id The server where teh category will be created
+             * @param name The category name
+             */
+            void category_create(dpp::snowflake guild_id, dpp::snowflake parent_id, std::string name);
+
+            /**
+             * @brief Create a channel
+             *
+             * @param guild_id The server where teh channel will be created
              * @param name The channel name
              */
-            void channel_create(dpp::cluster *, std::string name);
+            void channel_create(dpp::snowflake guild_id, dpp::snowflake parent_id, std::string name, dpp::channel_type chanType);
+
+            /**
+             * @brief Delete a channel
+             *
+             * @param guild_id The server where teh channel is
+             * @param name The channel name
+             */
+            void channel_delete(dpp::snowflake guild_id, std::string name);
+
+            void slash_commands_handle_channel_create(const dpp::slashcommand_t & event);
 
             /**
              * @brief Getter function for the bot id
