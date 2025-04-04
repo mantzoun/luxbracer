@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <iostream>
 #include <map>
-#include <mosquitto.h>
 #include <cstring>
 
 #include "discord_bot.h"
