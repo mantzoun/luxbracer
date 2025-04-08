@@ -14,11 +14,15 @@
 namespace luxbracer {
     static DiscordBot bot;
     static Engine engine;
+    Logger logger = Logger(LUX_LOG_DEBUG);
+
+    void game_loop() {
+        logger.info("here");
+        bot.post_message("syslog", "here");
+    }
 
     int main(int argc, char** argv)
     {
-        Logger logger = Logger(LUX_LOG_DEBUG);
-
         logger.info("Starting Discord Bot\n");
         bot.set_logger(&logger);
         std::string token = ""
@@ -66,8 +70,8 @@ namespace luxbracer {
         s.planetAdd(p);
         
         while(1){
-            logger.info("here");
             usleep(60 * 1000 * 1000);
+            game_loop();
         }
     }
 }

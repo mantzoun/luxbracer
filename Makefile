@@ -10,7 +10,7 @@ DOX = doxygen
 DOXYFILE = Doxyfile
 
 CC = g++
-CFLAGS = -Wall -g -std=c++17 -Wno-psabi
+CFLAGS = -Wall -g -std=c++20 -Wno-psabi
 INCLUDES = -I$(INCDIR) \
 
 LIB = -ldpp \
