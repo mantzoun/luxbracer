@@ -96,7 +96,7 @@ namespace luxbracer {
             /**
              * @brief Delete a channel
              *
-             * @param guild_id The server where teh channel is
+             * @param guild_id The server where the channel is
              * @param name The channel name
              */
             void channel_delete(dpp::snowflake guild_id, std::string name);
@@ -109,6 +109,16 @@ namespace luxbracer {
              * @return The bot id
              */
             std::string bot_id(void);
+
+            /**
+             * @brief Post a message to a channel
+             *
+             * @param channel The channel to post in
+             * @param message The text to post
+             *
+             * @return The bot id
+             */
+            void post_message(std::string channel, std::string message);
     };
 }
 

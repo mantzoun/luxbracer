@@ -12,8 +12,7 @@
 dpp::cluster     * bot;
 static luxbracer::DiscordBot  * luxbracer_discord_bot;
 
-static std::map<std::string, dpp::snowflake> channel_map;
-static std::map<std::string, dpp::snowflake> device_map;
+static std::map<std::string, dpp::snowflake> channels_list;
 
 static dpp::snowflake gid;
 
@@ -28,36 +27,89 @@ namespace luxbracer {
     {
     }
 
+    dpp::command_completion_event_t generic_callback(dpp::confirmation_callback_t value) {
+        bot->log(dpp::ll_debug, "Generic Callback");
+        if ( value.is_error() == true ){
+            dpp::error_info err = value.get_error();
+            bot->log(dpp::ll_error, "Error " + err.message);
+        }
+
+        return NULL;
+    }
+
     // ===================================================================
     //                          SLASH COMMANDS
     // ===================================================================
+    dpp::command_completion_event_t delete_guild_commands(dpp::confirmation_callback_t value) {
+        bot->log(dpp::ll_debug, "Guild Command cleanup Callback");
+        if ( value.is_error() == true ){
+            dpp::error_info err = value.get_error();
+            bot->log(dpp::ll_error, "Error " + err.message);
+        }
+
+        dpp::slashcommand_map map = std::get<dpp::slashcommand_map>(value.value);
+
+        for (auto& it: map) {
+            dpp::snowflake id = it.first;
+            dpp::slashcommand command = it.second;
+
+            bot->log(dpp::ll_debug, "Delete " + command.name);
+            bot->guild_command_delete(id, gid, NULL);
+        }
+
+        return NULL;
+    }
+
+    dpp::command_completion_event_t delete_global_commands(dpp::confirmation_callback_t value) {
+        bot->log(dpp::ll_debug, "Global Command cleanup Callback");
+        if ( value.is_error() == true ){
+            dpp::error_info err = value.get_error();
+            bot->log(dpp::ll_error, "Error " + err.message);
+        }
+
+        dpp::slashcommand_map map = std::get<dpp::slashcommand_map>(value.value);
+
+        for (auto& it: map) {
+            dpp::snowflake id = it.first;
+            dpp::slashcommand command = it.second;
+
+            bot->log(dpp::ll_debug, "Delete " + command.name);
+            bot->global_command_delete(id, NULL);
+        }
+
+        return NULL;
+    }
+
     void DiscordBot::slash_commands_register(dpp::snowflake guild_id) {
+        bot->log(dpp::ll_debug, "Register slash commands");
+        bot->guild_commands_get(guild_id, &delete_guild_commands);
+        bot->global_commands_get(&delete_global_commands);
         bot->unregister_command("channel_create");
         bot->unregister_command("channel_delete");
         bot->unregister_command("channel_rename");
-        
-        // dpp::slashcommand * cmd = new dpp::slashcommand("channel_create", "Create a new channel", bot->me.id);
-        // NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
-        // NEW_CMD_OPTION(cmd, dpp::co_string, "parent", "the channel parent", false);
-        // NEW_CMD_OPTION(cmd, dpp::co_string, "type", "the channel type", false,
-        //     NEW_CMD_CHOICE("Text", "TextChannel")
-        //     NEW_CMD_CHOICE("Category", "Category"));
-        
-        // bot->guild_command_create(*cmd, guild_id);      
-        // delete cmd;
 
-        // cmd = new dpp::slashcommand("channel_delete", "Delete a channel", bot->me.id);
-        // NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
+        dpp::slashcommand * cmd = new dpp::slashcommand("channel_create", "Create a new channel", bot->me.id);
+        NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
+        NEW_CMD_OPTION(cmd, dpp::co_string, "parent", "the channel parent", false);
+        NEW_CMD_OPTION(cmd, dpp::co_string, "type", "the channel type", false,
+            NEW_CMD_CHOICE("Text", "TextChannel")
+            NEW_CMD_CHOICE("Category", "Category"));
 
-        // bot->guild_command_create(*cmd, guild_id);
-        // delete cmd;
+        bot->guild_command_create(*cmd, guild_id);
+        delete cmd;
 
-        // cmd = new dpp::slashcommand("channel_rename", "Rename a channel", bot->me.id);
-        // NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
-        // NEW_CMD_OPTION(cmd, dpp::co_string, "new_name", "the new name", false);
+        cmd = new dpp::slashcommand("channel_delete", "Delete a channel", bot->me.id);
+        NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
 
-        // bot->guild_command_create(*cmd, guild_id);
-        // delete cmd;
+        bot->guild_command_create(*cmd, guild_id);
+        delete cmd;
+
+        cmd = new dpp::slashcommand("channel_rename", "Rename a channel", bot->me.id);
+        NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
+        NEW_CMD_OPTION(cmd, dpp::co_string, "new_name", "the new name", false);
+
+        bot->guild_command_create(*cmd, guild_id);
+        delete cmd;
     }
 
     void DiscordBot::slash_commands_handle(const dpp::slashcommand_t & event) {
@@ -72,7 +124,7 @@ namespace luxbracer {
 
     void DiscordBot::slash_commands_handle_channel_create(const dpp::slashcommand_t & event) {
         uint64_t guild_id = event.command.get_guild().id;
-        
+
         std::string name = std::get<std::string>(event.get_parameter("name"));
 
         std::string type = "";
@@ -116,6 +168,17 @@ namespace luxbracer {
 
         channel_create(guild_id, parent_id, name, chanType);
     }
+    // ===================================================================
+    //                          MESSAGES
+    // ===================================================================
+    void DiscordBot::post_message(std::string channel, std::string text) {
+        dpp::message message;
+
+        message.channel_id = channels_list[channel];
+        message.guild_id = gid;
+        message.content = text;
+        bot->message_create(message);
+    }
 
     // ===================================================================
     //                          CHANNELS
@@ -131,7 +194,7 @@ namespace luxbracer {
             chan.parent_id = parent_id;
         }
 
-        bot->channel_create(chan); 	
+        bot->channel_create(chan);
     }
 
     void DiscordBot::channel_delete(dpp::snowflake guild_id, std::string name) {
@@ -140,7 +203,7 @@ namespace luxbracer {
         chan->name = name;
         chan->guild_id = guild_id;
 
-//        bot->channel_delete(*chan, channels_callback); 	
+//        bot->channel_delete(*chan, channels_callback);
     }
 
     //dpp::command_completion_event_t existing_devices(dpp::confirmation_callback_t value)
@@ -181,15 +244,19 @@ namespace luxbracer {
            dpp::error_info err = value.get_error();
            bot->log(dpp::ll_error, "Error " + err.message);
        }
-    
+
        dpp::message m = std::get<dpp::message>(value.value);
-    
-       if (m.channel_id == channel_map["devices"]) {
-           bot->log(dpp::ll_debug, "Got respose for " + m.content);
-           device_map[m.content] = m.id;
-       }
-    
+
        return NULL;
+    }
+
+    dpp::command_completion_event_t  channels_create_cb(dpp::confirmation_callback_t value) {
+        dpp::channel channel = std::get<dpp::channel>(value.value);
+
+        bot->log(dpp::ll_debug, "Created channel " + channel.name + " with id " + std::to_string(channel.id));
+        channels_list[channel.name] = channel.id;
+
+        return NULL;
     }
 
     dpp::command_completion_event_t  channels_cb(dpp::confirmation_callback_t value)
@@ -199,29 +266,46 @@ namespace luxbracer {
             dpp::error_info err = value.get_error();
             bot->log(dpp::ll_error, "Error " + err.message);
         }
-        
+
         dpp::channel_map channelmap = std::get<dpp::channel_map>(value.value);
-        
+
         dpp::snowflake id;
         dpp::channel c;
 
         dpp::snowflake guild_id;
         dpp::snowflake parent_id;
-    
+
+        std::list default_channels = {"syslog"};
+
         for (auto& it: channelmap) {
             id = it.first;
             c = it.second;
             guild_id = c.guild_id;
             parent_id = c.parent_id;
-        
+
             bot->log(dpp::ll_debug, "" + c.name + " " + c.id.str() + " " + c.parent_id.str());
             luxbracer_discord_bot->add_channel(c.name, guild_id, c.id.str(), c.parent_id.str());
 
-            //channel_map[c.name] = id;
-        
+            bot->log(dpp::ll_debug, "Found channel " + c.name + " with id " + std::to_string(id));
+            channels_list[c.name] = id;
+
             //    if (c.name == "devices") {
             //        bot->messages_get(id, 0, 0, 0, 0, &existing_devices);
             //    }
+        }
+
+        for (std::string name : default_channels) {
+            if (! channels_list.contains(name)) {
+                bot->log(dpp::ll_debug, "Init Create channel " + name);
+
+                dpp::channel chan;
+
+                chan.name = name;
+                chan.guild_id = gid;
+                chan.set_type(dpp::CHANNEL_TEXT);
+
+                bot->channel_create(chan, &channels_create_cb);
+            }
         }
 
         // if (cat == 0){
@@ -238,7 +322,7 @@ namespace luxbracer {
         // m.channel_id = channel_map["syslog"];
         // m.content    = "Bot conneced, bot id " + luxbracer_discord_bot->bot_id();
         // bot->message_create(m, &my_message_cb);
-        
+
         return NULL;
     }
 
@@ -255,20 +339,20 @@ namespace luxbracer {
             dpp::error_info err = value.get_error();
             bot->log(dpp::ll_error, "Error " + err.message);
         }
-    
+
         dpp::guild_map guildmap = std::get<dpp::guild_map>(value.value);
-    
+
         dpp::snowflake id;
         dpp::guild g;
-    
-        for (auto& it: guildmap) {         
+
+        for (auto& it: guildmap) {
             id = it.first;
             g = it.second;
 
             luxbracer_discord_bot->add_guild(id);
 
             luxbracer_discord_bot->slash_commands_register(id);
-    
+
             bot->channels_get(id, &channels_cb);
             gid=id;
        }
