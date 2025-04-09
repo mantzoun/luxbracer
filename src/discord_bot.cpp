@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <map>
+#include <mutex>
 
 #include "discord_bot.h"
 
@@ -23,6 +24,8 @@ OBJ->add_option(dpp::command_option(TYPE, NAME, DESC, OBLIG)  __VA_ARGS__)
 .add_choice(dpp::command_option_choice(OPT_NAME, OPT_VALUE))
 
 namespace luxbracer {
+    void register_guild_commands();
+
     DiscordBot::DiscordBot(void)
     {
     }
@@ -40,6 +43,27 @@ namespace luxbracer {
     // ===================================================================
     //                          SLASH COMMANDS
     // ===================================================================
+    int total_commands = 0;
+    std::mutex myMutex;
+
+    dpp::command_completion_event_t guild_command_delete_counter(dpp::confirmation_callback_t value) {
+        std::lock_guard<std::mutex> lock(myMutex); // Locks the mutex
+        static int calls = 0;
+
+        bot->log(dpp::ll_debug, "Guild Command Delete Callback");
+        if ( value.is_error() == true ){
+            dpp::error_info err = value.get_error();
+            bot->log(dpp::ll_error, "Error " + err.message);
+        }
+
+        if (++calls == total_commands) {
+            //all deleted, register now
+            register_guild_commands();
+        }
+
+        return NULL;
+    }
+
     dpp::command_completion_event_t delete_guild_commands(dpp::confirmation_callback_t value) {
         bot->log(dpp::ll_debug, "Guild Command cleanup Callback");
         if ( value.is_error() == true ){
@@ -50,11 +74,16 @@ namespace luxbracer {
         dpp::slashcommand_map map = std::get<dpp::slashcommand_map>(value.value);
 
         for (auto& it: map) {
+            total_commands++;
             dpp::snowflake id = it.first;
             dpp::slashcommand command = it.second;
 
             bot->log(dpp::ll_debug, "Delete " + command.name);
-            bot->guild_command_delete(id, gid, NULL);
+            bot->guild_command_delete(id, gid, &guild_command_delete_counter);
+        }
+
+        if (total_commands == 0) {
+            register_guild_commands();
         }
 
         return NULL;
@@ -80,14 +109,7 @@ namespace luxbracer {
         return NULL;
     }
 
-    void DiscordBot::slash_commands_register(dpp::snowflake guild_id) {
-        bot->log(dpp::ll_debug, "Register slash commands");
-        bot->guild_commands_get(guild_id, &delete_guild_commands);
-        bot->global_commands_get(&delete_global_commands);
-        bot->unregister_command("channel_create");
-        bot->unregister_command("channel_delete");
-        bot->unregister_command("channel_rename");
-
+    void register_guild_commands() {
         dpp::slashcommand * cmd = new dpp::slashcommand("channel_create", "Create a new channel", bot->me.id);
         NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
         NEW_CMD_OPTION(cmd, dpp::co_string, "parent", "the channel parent", false);
@@ -95,21 +117,31 @@ namespace luxbracer {
             NEW_CMD_CHOICE("Text", "TextChannel")
             NEW_CMD_CHOICE("Category", "Category"));
 
-        bot->guild_command_create(*cmd, guild_id);
+        bot->log(dpp::ll_debug, "Register " + cmd->name);
+        bot->guild_command_create(*cmd, gid);
         delete cmd;
 
         cmd = new dpp::slashcommand("channel_delete", "Delete a channel", bot->me.id);
         NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
 
-        bot->guild_command_create(*cmd, guild_id);
+        bot->log(dpp::ll_debug, "Register " + cmd->name);
+        bot->guild_command_create(*cmd, gid);
         delete cmd;
 
         cmd = new dpp::slashcommand("channel_rename", "Rename a channel", bot->me.id);
         NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
         NEW_CMD_OPTION(cmd, dpp::co_string, "new_name", "the new name", false);
 
-        bot->guild_command_create(*cmd, guild_id);
+        bot->log(dpp::ll_debug, "Register " + cmd->name);
+        bot->guild_command_create(*cmd, gid);
         delete cmd;
+    }
+
+    void DiscordBot::slash_commands_init(dpp::snowflake guild_id) {
+        bot->log(dpp::ll_debug, "Register slash commands");
+        bot->guild_commands_get(guild_id, &delete_guild_commands);
+        bot->global_commands_get(&delete_global_commands);
+        //global commands_delete -> global commands register
     }
 
     void DiscordBot::slash_commands_handle(const dpp::slashcommand_t & event) {
@@ -119,8 +151,17 @@ namespace luxbracer {
 	           event.reply("command received");
 
                 slash_commands_handle_channel_create(event);
-	        }
+	        } else if (event.command.get_command_name() == "channel_delete") {
+               event.reply("command received");
+
+                slash_commands_handle_channel_delete(event);
+            }
 	}
+    void DiscordBot::slash_commands_handle_channel_delete(const dpp::slashcommand_t & event) {
+        std::string name = std::get<std::string>(event.get_parameter("name"));
+
+        my_channel_delete(name);
+    }
 
     void DiscordBot::slash_commands_handle_channel_create(const dpp::slashcommand_t & event) {
         uint64_t guild_id = event.command.get_guild().id;
@@ -166,7 +207,7 @@ namespace luxbracer {
             chanType = dpp::CHANNEL_CATEGORY;
         }
 
-        channel_create(guild_id, parent_id, name, chanType);
+        my_channel_create(guild_id, parent_id, name, chanType);
     }
     // ===================================================================
     //                          MESSAGES
@@ -183,7 +224,7 @@ namespace luxbracer {
     // ===================================================================
     //                          CHANNELS
     // ===================================================================
-    void DiscordBot::channel_create(dpp::snowflake guild_id, dpp::snowflake parent_id, std::string name, dpp::channel_type chanType) {
+    void DiscordBot::my_channel_create(dpp::snowflake guild_id, dpp::snowflake parent_id, std::string name, dpp::channel_type chanType) {
         dpp::channel chan;
 
         chan.name = name;
@@ -197,13 +238,10 @@ namespace luxbracer {
         bot->channel_create(chan);
     }
 
-    void DiscordBot::channel_delete(dpp::snowflake guild_id, std::string name) {
-        dpp::channel * chan = new dpp::channel();
-
-        chan->name = name;
-        chan->guild_id = guild_id;
-
-//        bot->channel_delete(*chan, channels_callback);
+    void DiscordBot::my_channel_delete(std::string name) {
+        if (channels_list.contains(name)) {
+            bot->channel_delete(channels_list[name], NULL);
+        }
     }
 
     //dpp::command_completion_event_t existing_devices(dpp::confirmation_callback_t value)
@@ -351,7 +389,7 @@ namespace luxbracer {
 
             luxbracer_discord_bot->add_guild(id);
 
-            luxbracer_discord_bot->slash_commands_register(id);
+            luxbracer_discord_bot->slash_commands_init(id);
 
             bot->channels_get(id, &channels_cb);
             gid=id;
