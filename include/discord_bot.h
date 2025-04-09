@@ -58,12 +58,12 @@ namespace luxbracer {
             void set_logger(Logger * logger);
 
             /**
-             * @brief register commands
+             * @brief Initialize commands
              ()
              */
-            void slash_commands_register(dpp::snowflake guild_id);
+            void slash_commands_init(dpp::snowflake guild_id);
 
-            
+
             /**
              * @brief handle commands
              ()
@@ -91,17 +91,17 @@ namespace luxbracer {
              * @param guild_id The server where teh channel will be created
              * @param name The channel name
              */
-            void channel_create(dpp::snowflake guild_id, dpp::snowflake parent_id, std::string name, dpp::channel_type chanType);
+            void my_channel_create(dpp::snowflake guild_id, dpp::snowflake parent_id, std::string name, dpp::channel_type chanType);
 
             /**
              * @brief Delete a channel
              *
-             * @param guild_id The server where the channel is
              * @param name The channel name
              */
-            void channel_delete(dpp::snowflake guild_id, std::string name);
+            void my_channel_delete(std::string name);
 
             void slash_commands_handle_channel_create(const dpp::slashcommand_t & event);
+            void slash_commands_handle_channel_delete(const dpp::slashcommand_t & event);
 
             /**
              * @brief Getter function for the bot id
