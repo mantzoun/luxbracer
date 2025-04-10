@@ -31,10 +31,10 @@ namespace luxbracer {
             }
         }
 
-        return result;  
+        return result;
     }
 
-    void DiscordGuild::channel_delete(uint64_t  channel_id, std::string name, uint64_t  parent_id) {
+    void DiscordGuild::channel_delete(uint64_t  channel_id, uint64_t  parent_id, std::string name) {
 
     }
 }
