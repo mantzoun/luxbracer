@@ -50,5 +50,8 @@ dox:  | $(DOCDIR)
 cpplint:
 	@cpplint $(SRCDIR)/* $(INCDIR)/*
 
+cppcheck:
+	@cppcheck $(SRCDIR) --enable=all --inconclusive --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR)
+
 test:
 
