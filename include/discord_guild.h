@@ -16,7 +16,7 @@ namespace luxbracer {
             uint64_t  id(void);
             void channel_add(DiscordChannel *);
             std::list<DiscordChannel *> channel_get(std::string name, uint64_t  channel_id = 0, uint64_t  parent_id = 0);
-            void channel_delete(uint64_t  channel_id, std::string name, uint64_t  parent_id);
+            void channel_delete(uint64_t  channel_id, uint64_t  parent_id, std::string name);
     };
 }
 
