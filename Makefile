@@ -46,3 +46,9 @@ clean:
 dox:  | $(DOCDIR)
 	@rm -rf $(DOCDIR)
 	$(DOX) $(DOXYFILE)
+
+cpplint:
+	@cpplint $(SRCDIR)/* $(INCDIR)/*
+
+test:
+
