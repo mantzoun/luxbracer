@@ -55,3 +55,5 @@ cppcheck:
 
 test:
 
+runner:
+	@docker build -t github:latest -f cicd/github-runner.Dockerfile .
