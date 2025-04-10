@@ -22,9 +22,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run clang-tidy
+      - name: Run cpplint
         run: |
-          make tidy
+          make cpplint
 
   sca:
     runs-on: sca
