@@ -34,14 +34,7 @@ jobs:
 
       - name: Static Code Analysis
         run: |
-          #          cppcheck src/ --enable=all --inconclusive --output-file=cppcheck.log
-          cppcheck src/ --enable=all --inconclusive --error-exitcode=1
-
-          #      - name: Upload cppcheck log
-          #        uses: actions/upload-artifact@v4
-          #        with:
-          #          name: cppcheck result
-          #          path: cppcheck.log
+          make cppcheck
 
   test:
     runs-on: test
