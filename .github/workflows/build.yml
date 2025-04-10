@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: [armada, mydev]
+    runs-on: build
 
     steps:
       - name: Checkout code
@@ -17,7 +17,7 @@ jobs:
         run: make all
 
   lint:
-    runs-on: [armada, mydev]
+    runs-on: lint
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
           make tidy
 
   sca:
-    runs-on: [armada, mydev]
+    runs-on: sca
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
           path: cppcheck.log
 
   valgrind:
-    runs-on: [armada, mydev]
+    runs-on: memcheck
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +53,7 @@ jobs:
           valgrind ./bin/myapp
 
   test:
-    runs-on: [armada, mydev]
+    runs-on: test
     needs: build
     steps:
       - uses: actions/checkout@v4
