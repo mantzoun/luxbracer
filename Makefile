@@ -51,7 +51,7 @@ cpplint:
 	@cpplint $(SRCDIR)/* $(INCDIR)/*
 
 cppcheck:
-	@cppcheck $(SRCDIR) --enable=all --inconclusive --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR)
+	@cppcheck $(SRCDIR) --enable=all --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR)
 
 test:
 
