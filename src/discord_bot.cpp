@@ -553,12 +553,12 @@ namespace luxbracer {
     //    });
 
         bot->on_channel_create([](const dpp::channel_create_t & event) {
-            luxbracer_discord_bot->add_channel(event.created.name, event.creating_guild.id, event.created.id, event.created.parent_id);
+            luxbracer_discord_bot->add_channel(event.created->name, event.creating_guild->id, event.created->id, event.created->parent_id);
         });
 
-	    bot->on_slashcommand([](const dpp::slashcommand_t & event) {
+        bot->on_slashcommand([](const dpp::slashcommand_t & event) {
             luxbracer_discord_bot->slash_commands_handle(event);
-	    });
+        });
 
         bot->on_ready([](const dpp::ready_t& event) {
             bot->current_user_get_guilds(&guild_callback);
