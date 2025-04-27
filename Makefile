@@ -15,7 +15,7 @@ INCLUDES = -I$(INCDIR) \
 
 LIB = -ldpp \
 
-FILES = main.cpp discord_bot.cpp discord_channel.cpp discord_guild.cpp lux_logger.cpp planet.cpp system.cpp engine.cpp
+FILES = main.cpp discord_bot.cpp discord_channel.cpp discord_guild.cpp discord_commands.cpp lux_logger.cpp planet.cpp system.cpp engine.cpp
 
 SRC = $(addprefix $(SRCDIR)/,$(FILES))
 OBJ = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o, $(SRC))

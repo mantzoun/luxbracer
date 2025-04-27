@@ -20,6 +20,11 @@
 #include "discord_guild.h"
 #include "discord_channel.h"
 
+#include <stdio.h>
+#include <map>
+#include <mutex>
+#include <vector>
+
 namespace luxbracer {
     /**
      * @class DiscordBot
@@ -104,9 +109,13 @@ namespace luxbracer {
              */
             void channel_delete(std::string name);
 
+            void channel_rename(std::string name, std::string new_name);
+
             void slash_commands_handle_channel_create(const dpp::slashcommand_t & event);
             void slash_commands_handle_channel_delete(const dpp::slashcommand_t & event);
+            void slash_commands_handle_channel_rename(const dpp::slashcommand_t & event);
             void register_guild_commands(void);
+            void register_guild_command(std::vector<std::string> command);
 
             /**
              * @brief Getter function for the bot id
