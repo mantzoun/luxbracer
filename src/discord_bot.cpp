@@ -4,17 +4,7 @@
  * implementation of CDB_DiscordBot methods
  */
 
-#include <stdio.h>
-#include <map>
-#include <mutex>
-
 #include "discord_bot.h"
-
-#define NEW_CMD_OPTION(OBJ, TYPE, NAME, DESC, OBLIG, ...) \
-OBJ->add_option(dpp::command_option(TYPE, NAME, DESC, OBLIG)  __VA_ARGS__)
-
-#define NEW_CMD_CHOICE(OPT_NAME, OPT_VALUE) \
-.add_choice(dpp::command_option_choice(OPT_NAME, OPT_VALUE))
 
 namespace luxbracer {
     void register_guild_commands();
@@ -23,181 +13,6 @@ namespace luxbracer {
     {
     }
 
-    // ===================================================================
-    //                          SLASH COMMANDS
-    // ===================================================================
-    int total_commands = 0;
-    std::mutex myMutex;
-
-    dpp::command_completion_event_t DiscordBot::guild_command_delete_counter(dpp::confirmation_callback_t value) {
-        std::lock_guard<std::mutex> lock(myMutex); // Locks the mutex
-        static int calls = 0;
-
-        this->discord_iface->log(dpp::ll_debug, "Guild Command Delete Callback");
-        if ( value.is_error() == true ){
-            dpp::error_info err = value.get_error();
-            this->discord_iface->log(dpp::ll_error, "Error " + err.message);
-        }
-
-        if (++calls == total_commands) {
-            //all deleted, register now
-            register_guild_commands();
-        }
-
-        return NULL;
-    }
-
-    dpp::command_completion_event_t DiscordBot::delete_guild_commands(dpp::confirmation_callback_t value) {
-        this->discord_iface->log(dpp::ll_debug, "Guild Command cleanup Callback");
-        if ( value.is_error() == true ){
-            dpp::error_info err = value.get_error();
-            this->discord_iface->log(dpp::ll_error, "Error " + err.message);
-        }
-
-        dpp::slashcommand_map map = std::get<dpp::slashcommand_map>(value.value);
-
-        for (auto& it: map) {
-            total_commands++;
-            dpp::snowflake id = it.first;
-            dpp::slashcommand command = it.second;
-
-            this->discord_iface->log(dpp::ll_debug, "Delete " + command.name);
-
-            std::function<void(const dpp::confirmation_callback_t&)> callback =
-            std::bind(&DiscordBot::guild_command_delete_counter, this, std::placeholders::_1);
-            this->discord_iface->guild_command_delete(id, this->guild_id, callback);
-        }
-
-        if (total_commands == 0) {
-            register_guild_commands();
-        }
-
-        return NULL;
-    }
-
-    dpp::command_completion_event_t DiscordBot::delete_global_commands(dpp::confirmation_callback_t value) {
-        this->discord_iface->log(dpp::ll_debug, "Global Command cleanup Callback");
-        if ( value.is_error() == true ){
-            dpp::error_info err = value.get_error();
-            this->discord_iface->log(dpp::ll_error, "Error " + err.message);
-        }
-
-        dpp::slashcommand_map map = std::get<dpp::slashcommand_map>(value.value);
-
-        for (auto& it: map) {
-            dpp::snowflake id = it.first;
-            dpp::slashcommand command = it.second;
-
-            this->discord_iface->log(dpp::ll_debug, "Delete " + command.name);
-            this->discord_iface->global_command_delete(id, NULL);
-        }
-
-        return NULL;
-    }
-
-    void DiscordBot::register_guild_commands() {
-        dpp::slashcommand * cmd = new dpp::slashcommand("channel_create", "Create a new channel", this->discord_iface->me.id);
-        NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
-        NEW_CMD_OPTION(cmd, dpp::co_string, "parent", "the channel parent", false);
-        NEW_CMD_OPTION(cmd, dpp::co_string, "type", "the channel type", false,
-            NEW_CMD_CHOICE("Text", "TextChannel")
-            NEW_CMD_CHOICE("Category", "Category"));
-
-        this->discord_iface->log(dpp::ll_debug, "Register " + cmd->name);
-        this->discord_iface->guild_command_create(*cmd, this->guild_id);
-        delete cmd;
-
-        cmd = new dpp::slashcommand("channel_delete", "Delete a channel", this->discord_iface->me.id);
-        NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
-
-        this->discord_iface->log(dpp::ll_debug, "Register " + cmd->name);
-        this->discord_iface->guild_command_create(*cmd, this->guild_id);
-        delete cmd;
-
-        cmd = new dpp::slashcommand("channel_rename", "Rename a channel", this->discord_iface->me.id);
-        NEW_CMD_OPTION(cmd, dpp::co_string, "name", "the channel name", true);
-        NEW_CMD_OPTION(cmd, dpp::co_string, "new_name", "the new name", false);
-
-        this->discord_iface->log(dpp::ll_debug, "Register " + cmd->name);
-        this->discord_iface->guild_command_create(*cmd, this->guild_id);
-        delete cmd;
-    }
-
-    void DiscordBot::slash_commands_init() {
-        this->discord_iface->log(dpp::ll_debug, "Register slash commands");
-
-        std::function<void(const dpp::confirmation_callback_t&)> callback =
-        std::bind(&DiscordBot::delete_guild_commands, this, std::placeholders::_1);
-        this->discord_iface->guild_commands_get(guild_id, callback);
-
-        callback = std::bind(&DiscordBot::delete_global_commands, this, std::placeholders::_1);
-        this->discord_iface->global_commands_get(callback);
-    }
-
-    void DiscordBot::slash_commands_handle(const dpp::slashcommand_t & event) {
-	        /* Check which command they ran */
-            this->discord_iface->log(dpp::ll_warning, "COMMAND: " + event.command.get_command_name());
-	        if (event.command.get_command_name() == "channel_create") {
-	           event.reply("command received");
-
-                this->slash_commands_handle_channel_create(event);
-	        } else if (event.command.get_command_name() == "channel_delete") {
-               event.reply("command received");
-
-                this->slash_commands_handle_channel_delete(event);
-            }
-	}
-
-    void DiscordBot::slash_commands_handle_channel_delete(const dpp::slashcommand_t & event) {
-        std::string name = std::get<std::string>(event.get_parameter("name"));
-
-        this->channel_delete(name);
-        //FIXME parents staff in channel hierarchy
-    }
-
-    void DiscordBot::slash_commands_handle_channel_create(const dpp::slashcommand_t & event) {
-        std::string name = std::get<std::string>(event.get_parameter("name"));
-
-        std::string type = "";
-        try {
-            type = std::get<std::string>(event.get_parameter("type"));
-        } catch (const std::bad_variant_access& e) {
-        }
-
-        std::string parent = "";
-        try {
-            parent = std::get<std::string>(event.get_parameter("parent"));
-        } catch (const std::bad_variant_access& e) {
-        }
-
-        uint64_t parent_id = 0;
-
-        this->logger->info(name + " # " + type + " # " + parent);
-
-        if (parent != "") {
-            std::list<DiscordChannel *> parents = this->guild->channel_get(parent);
-
-            if (parents.size() == 0) {
-                this->logger->warn("channel parent not found " + parent);
-                return;
-            }
-
-            if (parents.size() > 1) {
-                this->logger->warn("multiple parents found " + parent);
-                return;
-            }
-
-            parent_id = parents.front()->id();
-        }
-
-        dpp::channel_type chanType = dpp::CHANNEL_TEXT;
-
-        if (type == "Category") {
-            chanType = dpp::CHANNEL_CATEGORY;
-        }
-
-        this->channel_create(parent_id, name, chanType);
-    }
     // ===================================================================
     //                          MESSAGES
     // ===================================================================
@@ -234,6 +49,25 @@ namespace luxbracer {
             this->discord_iface->log(dpp::ll_debug, "Invalid channel delete: " + name);
         }
     }
+
+    void DiscordBot::channel_rename(std::string name, std::string new_name) {
+        if (this->channels_list.contains(name)) {
+            dpp::snowflake id = channels_list[name];
+            dpp::channel channel;
+
+            channel.id = id;
+            channel.set_name(new_name);
+            this->discord_iface->channel_edit(channel, NULL);
+
+            auto entry = channels_list.extract(name);
+            entry.key() = new_name;
+            channels_list.insert(std::move(entry));
+
+        } else {
+            this->discord_iface->log(dpp::ll_debug, "Invalid channel rename: " + name);
+        }
+    }
+    dpp::channel ch;
 
     //dpp::command_completion_event_t existing_devices(dpp::confirmation_callback_t value)
     //{
