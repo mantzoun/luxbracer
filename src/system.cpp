@@ -1,8 +1,10 @@
 #include "system.h"
 
 namespace luxbracer {
-    System::System(std::string name) {
-        _name = name;
+    System::System(const std::string& name, uint64_t id)
+        : _name(name),
+          _id(id)
+    {
     }
 
     systemError System::planetAdd(Planet planet) {
@@ -15,12 +17,11 @@ namespace luxbracer {
         return SYSTEM_OK;
     }
 
-    std::string System::name() {
+    std::string System::name() const {
         return _name;
     }
 
     void System::setLogger(Logger * l) {
         logger = l;
     }
-    
 }

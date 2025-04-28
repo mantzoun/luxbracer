@@ -3,20 +3,31 @@
 
 #include "dpp/dpp.h"
 #include "discord_channel.h"
-
+#include "lux_logger.h"
 namespace luxbracer {
     class DiscordGuild {
         private:
-            uint64_t  _id;
-            std::list<DiscordChannel *> channels;
+            dpp::snowflake  _id;
+            std::list<DiscordChannel> channels;
+            Logger * logger;
 
         public:
-            DiscordGuild(uint64_t);
+            DiscordGuild(const dpp::snowflake _id);
 
-            uint64_t  id(void);
-            void channel_add(DiscordChannel *);
-            std::list<DiscordChannel *> channel_get(std::string name, uint64_t  channel_id = 0, uint64_t  parent_id = 0);
-            void channel_delete(uint64_t  channel_id, uint64_t  parent_id, std::string name);
+            dpp::snowflake id(void) const;
+
+            void set_logger(Logger * logger);
+
+            void verify_and_add_channel(const DiscordChannel& channel);
+            void verify_and_delete_channel(const DiscordChannel& channel);
+            void verify_and_update_channel(const DiscordChannel& channel);
+
+            void channel_add(const dpp::channel_create_t & channel);
+            void channel_add(const dpp::channel & channel);
+            void channel_delete(const dpp::channel_delete_t & channel);
+            void channel_update(const dpp::channel_update_t & channel);
+
+            std::list<DiscordChannel *> channel_get(std::string name, dpp::snowflake channel_id = 0, dpp::snowflake parent_id = 0);
     };
 }
 

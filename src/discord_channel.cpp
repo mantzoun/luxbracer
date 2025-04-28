@@ -1,21 +1,29 @@
 #include "discord_channel.h"
 
 namespace luxbracer {
-    DiscordChannel::DiscordChannel(uint64_t  id, uint64_t  parent, std::string name) {
+    DiscordChannel::DiscordChannel(dpp::snowflake id, dpp::snowflake parent, std::string name) {
         _name = name;
         _id = id;
         _parent = parent;
     }
 
-    uint64_t  DiscordChannel::id(void) {
+    dpp::snowflake DiscordChannel::id(void) const {
         return _id;
     }
 
-    uint64_t  DiscordChannel::parent(void) {
+    dpp::snowflake DiscordChannel::parent(void) const{
         return _parent;
     }
 
-    std::string DiscordChannel::name(void) {
+    std::string DiscordChannel::name(void) const{
         return _name;
+    }
+
+    void DiscordChannel::set_parent(dpp::snowflake parent) {
+        _parent = parent;
+    }
+
+    void DiscordChannel::set_name(const std::string& name) {
+        _name = name;
     }
 }

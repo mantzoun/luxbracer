@@ -37,12 +37,11 @@ namespace luxbracer {
     {
         private:
             Logger *        logger = NULL;
-            std::string     bot_id;
-            DiscordGuild *  guild;
+            std::string     bot_id = "";
+            DiscordGuild *  guild = NULL;
 
-            dpp::cluster    * discord_iface;
-            dpp::snowflake  guild_id;
-            std::map<std::string, dpp::snowflake> channels_list;
+            dpp::cluster    * discord_iface = NULL;
+            dpp::snowflake  guild_id = 0;
 
         public:
             DiscordBot(void);
@@ -56,8 +55,10 @@ namespace luxbracer {
 
             void initialize_guild(dpp::snowflake);
 
-            void channel_added_callback(std::string name, dpp::snowflake channel, dpp::snowflake parent_id);
-            void channel_deleted_callback(std::string name, dpp::snowflake channel, dpp::snowflake parent_id);
+            void channel_added_callback(const dpp::channel_create_t & channel);
+            void channel_deleted_callback(const dpp::channel_delete_t & channel);
+            void channel_discovered_callback(const dpp::channel & channel);
+            void channel_updated_callback(const dpp::channel_update_t & channel);
 
             /**
              * @brief set the logger object
@@ -117,12 +118,12 @@ namespace luxbracer {
             void register_guild_commands(void);
             void register_guild_command(std::vector<std::string> command);
 
-            /**
-             * @brief Getter function for the bot id
-             *
-             * @return The bot id
-             */
-            std::string bot_id_get(void);
+//            /**
+//             * @brief Getter function for the bot id
+//             *
+//             * @return The bot id
+//             */
+//            std::string bot_id_get(void);
 
             /**
              * @brief Post a message to a channel
@@ -132,7 +133,7 @@ namespace luxbracer {
              *
              * @return The bot id
              */
-            void post_message(std::string channel, std::string message);
+            void post_message(std::string channel_name, std::string message);
 
             dpp::command_completion_event_t user_get_guilds_callback(dpp::confirmation_callback_t value);
             dpp::command_completion_event_t channels_get_callback(dpp::confirmation_callback_t value);

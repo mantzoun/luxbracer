@@ -21,7 +21,7 @@ namespace luxbracer {
         public:
             Engine(void);
 
-            engineError systemAdd(System s);
+            engineError systemAdd(System system);
             void setLogger(Logger * l);
     };
 }

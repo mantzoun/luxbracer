@@ -53,35 +53,35 @@ namespace luxbracer {
              * @param lvl The message severity
              * @param msg The log message
              */
-            void    log(log_lvl lvl, std::string msg);
+            void    log(log_lvl lvl, const std::string& msg);
 
             /**
              * @brief wrapper that calls the log() function with DEBUG severity
              *
              * @param msg The log message
              */
-            void    debug(std::string msg);
+            void    debug(const std::string& msg);
 
             /**
              * @brief wrapper that calls the log() function with INFO severity
              *
              * @param msg The log message
              */
-            void    info(std::string msg);
+            void    info(const std::string& msg);
 
             /**
              * @brief wrapper that calls the log() function with WANR severity
              *
              * @param msg The log message
              */
-            void    warn(std::string msg);
+            void    warn(const std::string& msg);
 
             /**
              * @brief wrapper that calls the log() function with ERRROR severity
              *
              * @param msg The log message
              */
-            void    error(std::string msg);
+            void    error(const std::string& msg);
     };
 }
 

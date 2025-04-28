@@ -50,9 +50,9 @@ namespace luxbracer {
 
     class Planet {
         private:
-            std::string    _name;
-            uint64_t        _id;
+            std::string     _name;
             std::string     _system;
+            uint64_t        _id;
  //           List<stateEntity> _states
  //           List<accessPoint> _accessPoints
  //           planetType _type;
@@ -63,9 +63,9 @@ namespace luxbracer {
 //            bool _atmoBreathable;
 //            biosphereType _biosphere;
         public:
-            Planet(std::string name, std::string system);
+            Planet(const std::string& name, const std::string& system, uint64_t id);
 
-            std::string name(void);
+            std::string name(void) const;
     };
 }
 

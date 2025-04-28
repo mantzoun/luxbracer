@@ -29,9 +29,10 @@ namespace luxbracer {
         std::string id = "myid";
         bot.init(token, id);
 
-        Planet p("p1", "s1");
-        System s("s1");
+        Planet p("p1", "s1", 0);
+        System s("s1", 0);
 
+        engine.setLogger(&logger);
         engine.systemAdd(s);
         s.planetAdd(p);
 

@@ -25,9 +25,9 @@ namespace luxbracer {
 
             std::map<std::string, Planet> _planets;
         public:
-            System(std::string name);
+            System(const std::string& name, uint64_t id);
 
-            std::string name(void);
+            std::string name(void) const;
 
             systemError planetAdd(Planet planet);
             void setLogger(Logger * l);

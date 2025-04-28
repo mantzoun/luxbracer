@@ -100,7 +100,7 @@ namespace luxbracer {
         },
         {"channel_rename", "Rename a channel",
             "string", "name", "the channel name", "true",
-            "string", "new_name", "the new name" "true",
+            "string", "new_name", "the new name", "true",
         },
     };
 
