@@ -1,7 +1,8 @@
 FROM ubuntu:24.04
 
-RUN apt-get update -y && apt-get upgrade -y
-RUN apt-get install -y build-essential gcc g++ make git vim cmake wget file jq curl cpplint cppcheck
+RUN apt-get update -y
+RUN apt-get install -y build-essential gcc g++ make git vim cmake wget file jq curl cpplint cppcheck libopus-dev
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -s /bin/bash pi
 RUN echo "pi:123 | chpasswd"
@@ -30,14 +31,14 @@ RUN wget -O actions-runner.tar.gz ${RUNNER_URL}
 RUN tar xzf ./actions-runner.tar.gz
 
 # Create the runner and start the configuration experience
-CMD REG_TOKEN=`curl -s -X POST \
+RUN REG_TOKEN=`curl -s -X POST \
                     -H "Authorization: token ${PAT_TOKEN}" \
                     -H "Accept: application/vnd.github+json" \
                     https://api.github.com/repos/mantzoun/luxbracer/actions/runners/registration-token| jq -r .token` \
     && ./config.sh --url https://github.com/mantzoun/luxbracer \
                 --token ${REG_TOKEN} \
-                --name mydev-l \
+                --name mydev-laptop \
                 --labels mydev,build,lint,sca,test \
                 --unattended \
-                --replace \
-    && ./run.sh
+                --replace
+CMD ./run.sh
