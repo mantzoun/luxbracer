@@ -29,8 +29,8 @@ namespace luxbracer {
         std::string id = "myid";
         bot.init(token, id);
 
-        Planet p("p1", "s1");
-        System s("s1");
+        Planet p("p1", "s1", 0);
+        System s("s1", 0);
 
 //    cdb::Logger logger = cdb::Logger(cdb::CDB_LOG_DEBUG);
 
@@ -66,6 +66,7 @@ namespace luxbracer {
 
     while(1){
         usleep(1000000);
+        engine.setLogger(&logger);
         engine.systemAdd(s);
         s.planetAdd(p);
 

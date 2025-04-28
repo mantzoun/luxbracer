@@ -7,16 +7,24 @@
 namespace luxbracer {
     class DiscordChannel {
         private:
-            uint64_t  _id;
-            uint64_t  _parent;
+            dpp::snowflake  _id;
+            dpp::snowflake  _parent;
             std::string _name;
         public:
-            DiscordChannel(uint64_t  id, uint64_t  parent, std::string name);
+            DiscordChannel(dpp::snowflake id, dpp::snowflake parent, std::string name);
 
-            uint64_t  id(void);
-            uint64_t  parent(void);
-            std::string name(void);
+            dpp::snowflake  id(void) const;
+            dpp::snowflake  parent(void) const;
+            std::string     name(void) const;
 
+            void set_parent(dpp::snowflake parent);
+            void set_name(const std::string& name);
+
+            bool operator==(const DiscordChannel& other) const {
+                return (_id == other.id() &&
+                        _parent == other.parent() &&
+                        _name == other.name());
+            }
     };
 }
 

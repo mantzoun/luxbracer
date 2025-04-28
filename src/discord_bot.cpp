@@ -16,13 +16,23 @@ namespace luxbracer {
     // ===================================================================
     //                          MESSAGES
     // ===================================================================
-    void DiscordBot::post_message(std::string channel, std::string text) {
+    void DiscordBot::post_message(std::string channel_name, std::string text) {
         dpp::message message;
 
-        message.channel_id = channels_list[channel];
-        message.guild_id = this->guild_id;
-        message.content = text;
-        this->discord_iface->message_create(message);
+        std::list<DiscordChannel *> channels = this->guild->channel_get(channel_name);
+
+        if (channels.size() == 0) {
+            logger->error("No channels found to post : " + channel_name);
+            return;
+        }
+
+        for (DiscordChannel * channel : channels) {
+            message.channel_id = channel->id();
+            message.guild_id = this->guild_id;
+            message.content = text;
+            logger->debug("Post to channel : " + channel->name() + "," + std::to_string(channel->id()) + "," + std::to_string(channel->parent()));
+            this->discord_iface->message_create(message);
+        }
     }
 
     // ===================================================================
@@ -43,31 +53,34 @@ namespace luxbracer {
     }
 
     void DiscordBot::channel_delete(std::string name) {
-        if (this->channels_list.contains(name)) {
-            this->discord_iface->channel_delete(channels_list[name], NULL);
-        } else {
-            this->discord_iface->log(dpp::ll_debug, "Invalid channel delete: " + name);
+        std::list<DiscordChannel *> channels = this->guild->channel_get(name);
+
+        if (channels.size() != 1) {
+            logger->warn("Number of channels to delete not 1 : " + std::to_string(channels.size()));
+            return;
         }
+
+        DiscordChannel * discord_channel = channels.front();
+        this->discord_iface->channel_delete(discord_channel->id(), NULL);
     }
 
     void DiscordBot::channel_rename(std::string name, std::string new_name) {
-        if (this->channels_list.contains(name)) {
-            dpp::snowflake id = channels_list[name];
-            dpp::channel channel;
+        std::list<DiscordChannel *> channels = this->guild->channel_get(name);
 
-            channel.id = id;
-            channel.set_name(new_name);
-            this->discord_iface->channel_edit(channel, NULL);
-
-            auto entry = channels_list.extract(name);
-            entry.key() = new_name;
-            channels_list.insert(std::move(entry));
-
-        } else {
-            this->discord_iface->log(dpp::ll_debug, "Invalid channel rename: " + name);
+        if (channels.size() != 1) {
+            logger->warn("Number of channels to rename not 1 : " + std::to_string(channels.size()));
+            return;
         }
+
+        DiscordChannel * discord_channel = channels.front();
+
+        dpp::channel channel;
+
+        channel.id = discord_channel->id();
+        channel.set_name(new_name);
+        this->discord_iface->channel_edit(channel, NULL);
     }
-    dpp::channel ch;
+    // dpp::channel ch;
 
     //dpp::command_completion_event_t existing_devices(dpp::confirmation_callback_t value)
     //{
@@ -113,28 +126,28 @@ namespace luxbracer {
     //    return NULL;
     // }
 
-    dpp::command_completion_event_t DiscordBot::channels_create_cb(dpp::confirmation_callback_t value) {
-        dpp::channel channel = std::get<dpp::channel>(value.value);
+    // dpp::command_completion_event_t DiscordBot::channels_create_cb(dpp::confirmation_callback_t value) {
+    //     dpp::channel channel = std::get<dpp::channel>(value.value);
 
-        this->discord_iface->log(dpp::ll_debug, "Created channel " + channel.name + " with id " + std::to_string(channel.id));
-        this->channels_list[channel.name] = channel.id;
+    //     this->discord_iface->log(dpp::ll_debug, "Created channel " + channel.name + " with id " + std::to_string(channel.id));
+    //     this->channels_list[channel.name] = channel.id;
 
-        return NULL;
-    }
+    //     return NULL;
+    // }
 
     dpp::command_completion_event_t  DiscordBot::channels_get_callback(dpp::confirmation_callback_t value)
     {
-        this->discord_iface->log(dpp::ll_debug, "channels Callback");
+        this->logger->debug("channels Callback");
 
         if ( value.is_error() == true ){
             dpp::error_info err = value.get_error();
-            this->discord_iface->log(dpp::ll_error, "Error " + err.message);
+            logger->error("Error " + err.message);
         }
 
         dpp::channel_map channelmap = std::get<dpp::channel_map>(value.value);
 
         dpp::snowflake id;
-        dpp::channel c;
+        dpp::channel channel;
 
         dpp::snowflake parent_id;
 
@@ -142,35 +155,40 @@ namespace luxbracer {
 
         for (auto& it: channelmap) {
             id = it.first;
-            c = it.second;
+            channel = it.second;
 
-            parent_id = c.parent_id;
+            parent_id = channel.parent_id;
 
-            this->discord_iface->log(dpp::ll_debug, "" + c.name + " " + c.id.str() + " " + c.parent_id.str());
-            this->channel_added_callback(c.name, c.id.str(), c.parent_id.str());
+            this->logger->debug("" + channel.name + " " + channel.id.str() + " " + channel.parent_id.str());
+            this->guild->channel_add(channel);
 
-            this->discord_iface->log(dpp::ll_debug, "Found channel " + c.name + " with id " + std::to_string(id));
-            this->channels_list[c.name] = id;
+            this->logger->debug("Found channel " + channel.name + " with id " + std::to_string(id));
+            // this->channels_list[c.name] = id;
 
             //    if (c.name == "devices") {
             //        this->discord_iface->messages_get(id, 0, 0, 0, 0, &existing_devices);
             //    }
         }
 
-        for (std::string name : default_channels) {
-            if (! channels_list.contains(name)) {
-                this->discord_iface->log(dpp::ll_debug, "Init Create channel " + name);
+        for (std::string channel_name : default_channels) {
+            std::list<DiscordChannel *> channels = this->guild->channel_get(channel_name);
 
-                dpp::channel chan;
-
-                chan.name = name;
-                chan.guild_id = this->guild_id;
-                chan.set_type(dpp::CHANNEL_TEXT);
-
-                std::function<void(const dpp::confirmation_callback_t&)> callback =
-                std::bind(&DiscordBot::channels_create_cb, this, std::placeholders::_1);
-                this->discord_iface->channel_create(chan, callback);
+            if (channels.size() > 0) {
+                continue;
             }
+
+            this->logger->debug("Init Create channel " + channel_name);
+
+            dpp::channel chan;
+
+            chan.name = channel_name;
+            chan.guild_id = this->guild_id;
+            chan.set_type(dpp::CHANNEL_TEXT);
+
+            // std::function<void(const dpp::confirmation_callback_t&)> callback =
+            // std::bind(&DiscordBot::channels_create_cb, this, std::placeholders::_1);
+            this->discord_iface->channel_create(chan);//, callback);
+
         }
 
         // if (cat == 0){
@@ -191,26 +209,34 @@ namespace luxbracer {
         return NULL;
     }
 
-    void DiscordBot::channel_added_callback(std::string name, dpp::snowflake channel_id, dpp::snowflake parent_id) {
-        this->guild->channel_add(new DiscordChannel(channel_id, parent_id, name));
-    }
+    // void DiscordBot::channel_added_callback(const dpp::channel_create_t & channel) {
+    //     this->guild->channel_add(channel);
+    // }
 
-    void DiscordBot::channel_deleted_callback(std::string name, dpp::snowflake channel_id, dpp::snowflake parent_id) {
-        this->guild->channel_delete(channel_id, parent_id, name);
-    }
+    // void DiscordBot::channel_deleted_callback(const dpp::channel_delete_t & channel) {
+    //     this->guild->channel_delete(channel);
+    // }
+
+    // void DiscordBot::channel_discovered_callback(const dpp::channel & channel) {
+    //     this->guild->channel_add(channel);
+    // }
+
+    // void DiscordBot::channel_updated_callback(const dpp::channel_update_t & channel) {
+    //     this->guild->channel_update(channel);
+    // }
 
     dpp::command_completion_event_t DiscordBot::user_get_guilds_callback(dpp::confirmation_callback_t value)
     {
-        this->discord_iface->log(dpp::ll_debug, "Guilds Callback");
+        this->logger->debug( "Guilds Callback");
         if ( value.is_error() == true ){
             dpp::error_info err = value.get_error();
-            this->discord_iface->log(dpp::ll_error, "Error " + err.message);
+            this->logger->error("Error " + err.message);
         }
 
         dpp::guild_map guildmap = std::get<dpp::guild_map>(value.value);
 
         if (guildmap.size() > 1) {
-            this->discord_iface->log(dpp::ll_error, "Error, too many guilds ");
+            this->logger->error("Error, too many guilds ");
             return NULL;
         }
 
@@ -237,6 +263,7 @@ namespace luxbracer {
 
     void DiscordBot::initialize_guild(dpp::snowflake id) {
         this->guild = new DiscordGuild(id);
+        this->guild->set_logger(logger);
     }
 
     //void luxbracer::DiscordBot::message_cb(luxbracer::callback_msg * msg)
@@ -323,28 +350,28 @@ namespace luxbracer {
 
         //luxbracer_discord_bot = this;
 
-        this->bot_id = bot_id;
+        this->bot_id = id;
 
         // Use our own logger for output consistency
         this->discord_iface->on_log([this](const dpp::log_t & event) {
-       switch (event.severity) {
-           case dpp::ll_trace:
-           case dpp::ll_debug:
-               this->logger->debug("Discord Bot: " + event.message);
-               break;
-           case dpp::ll_info:
-               this->logger->info("Discord Bot: " +  event.message);
-               break;
-           case dpp::ll_warning:
-               this->logger->warn("Discord Bot: " + event.message);
-               break;
-           case dpp::ll_error:
-           case dpp::ll_critical:
-           default:
-               this->logger->error("Discord Bot: " + event.message);
-               break;
-           }
-       });
+        switch (event.severity) {
+            case dpp::ll_trace:
+            case dpp::ll_debug:
+                this->logger->debug("Discord Bot: " + event.message);
+                break;
+            case dpp::ll_info:
+                this->logger->info("Discord Bot: " +  event.message);
+                break;
+            case dpp::ll_warning:
+                this->logger->warn("Discord Bot: " + event.message);
+                break;
+            case dpp::ll_error:
+            case dpp::ll_critical:
+            default:
+                this->logger->error("Discord Bot: " + event.message);
+                break;
+            }
+        });
 
 
     //    this->discord_iface->on_button_click([this](const dpp::button_click_t & event) {
@@ -390,20 +417,16 @@ namespace luxbracer {
     //        this->m_handler->message_cb(&msg);
     //    });
 
-        this->discord_iface->on_channel_create([this](const dpp::channel_create_t & event) {
-            this->channel_added_callback(event.created.name,
-                              event.created.id,
-                              event.created.parent_id);
-
-            this->channels_list[event.created.name] = event.created.id;
+        this->discord_iface->on_channel_create([this](const dpp::channel_create_t & channel) {
+            this->guild->channel_add(channel);
         });
 
-        this->discord_iface->on_channel_delete([this](const dpp::channel_delete_t & event) {
-            this->channel_deleted_callback(event.deleted.name,
-                              event.deleted.id,
-                              event.deleted.parent_id);
+        this->discord_iface->on_channel_delete([this](const dpp::channel_delete_t & channel) {
+            this->guild->channel_delete(channel);
+        });
 
-            this->channels_list.erase(event.deleted.name);
+        this->discord_iface->on_channel_update([this](const dpp::channel_update_t & channel) {
+            this->guild->channel_update(channel);
         });
 
         this->discord_iface->on_slashcommand([this](const dpp::slashcommand_t & event) {
@@ -425,8 +448,8 @@ namespace luxbracer {
     this->logger = l;
     }
 
-    std::string DiscordBot::bot_id_get(void)
-    {
-        return this->bot_id;
-    }
+    //std::string DiscordBot::bot_id_get(void)
+    //{
+    //    return this->bot_id;
+    //}
 }

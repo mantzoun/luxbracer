@@ -32,7 +32,7 @@ namespace luxbracer {
         this->level = lvl;
     }
 
-    void Logger::log(log_lvl lvl, std::string s)
+    void Logger::log(log_lvl lvl, const std::string& msg)
     {
         if (lvl >= this->level){
             std::scoped_lock lock(mutex);
@@ -44,28 +44,28 @@ namespace luxbracer {
                                                              ltm->tm_hour, ltm->tm_min, ltm->tm_sec,
                                                              lux_log_lvl_str[lvl].c_str());
             std::string tstamp = res;
-            std::cout << tstamp + " " + s + "\n";
+            std::cout << tstamp + " " + msg + "\n";
             std::cout.flush();
         }
     }
 
-    void Logger::debug(std::string s)
+    void Logger::debug(const std::string& msg)
     {
-        this->log(LUX_LOG_DEBUG, s);
+        this->log(LUX_LOG_DEBUG, msg);
     }
 
-    void Logger::info(std::string s)
+    void Logger::info(const std::string& msg)
     {
-        this->log(LUX_LOG_INFO, s);
+        this->log(LUX_LOG_INFO, msg);
     }
 
-    void Logger::warn(std::string s)
+    void Logger::warn(const std::string& msg)
     {
-        this->log(LUX_LOG_WARN, s);
+        this->log(LUX_LOG_WARN, msg);
     }
 
-    void Logger::error(std::string s)
+    void Logger::error(const std::string& msg)
     {
-        this->log(LUX_LOG_ERROR, s);
+        this->log(LUX_LOG_ERROR, msg);
     }
 }

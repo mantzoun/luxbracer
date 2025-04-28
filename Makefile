@@ -48,10 +48,10 @@ dox:  | $(DOCDIR)
 	$(DOX) $(DOXYFILE)
 
 cpplint:
-	@cpplint $(SRCDIR)/* $(INCDIR)/*
+	@cpplint $(SRC) $(INCDIR)/*
 
 cppcheck:
-	@cppcheck $(SRCDIR) --enable=all --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR)
+	@cppcheck $(SRC) --enable=all --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR)
 
 test:
 
