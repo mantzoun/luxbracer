@@ -11,10 +11,11 @@ DOX = doxygen
 DOXYFILE = Doxyfile
 
 CC = g++
-CFLAGS = -Wall -g -std=c++20 -Wno-psabi
+CFLAGS = -Wall -g -std=c++20 -Wno-psabi -O0 -fprofile-arcs -ftest-coverage
 INCLUDES = -I$(INCDIR) \
 
 LIB = -ldpp \
+      -lgcov \
 
 FILES = main.cpp discord_bot.cpp discord_channel.cpp discord_guild.cpp discord_commands.cpp lux_logger.cpp planet.cpp system.cpp engine.cpp
 
@@ -67,6 +68,13 @@ $(TSTBIN): $(TSTOBJ) $(filter-out $(OBJDIR)/main.o, $(OBJ)) | $(BINDIR)
 	$(CC) -o $(TSTBIN) $(TSTOBJ) $(filter-out $(OBJDIR)/main.o, $(OBJ)) $(LIB)
 
 test: $(TSTBIN)
+	bin/test
+
+coverage: test
+	lcov --capture --directory . --output-file coverage.info
+	lcov --remove coverage.info '/usr/*' --output-file coverage_clean.info
+	genhtml coverage_clean.info --output-directory out
+
 
 runner:
 	@docker build -t github:latest -f cicd/github-runner.Dockerfile .
