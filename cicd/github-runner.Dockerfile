@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 
-RUN apt-get update -y
-RUN apt-get install -y build-essential gcc g++ make git vim cmake wget file jq curl cpplint cppcheck libopus-dev
+RUN apt update
+RUN apt install -y build-essential gcc g++ make git vim cmake wget file jq curl cpplint cppcheck libopus-dev lcov
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -s /bin/bash pi
