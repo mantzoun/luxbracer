@@ -69,7 +69,7 @@ $(TSTBIN): $(TSTOBJ) $(filter-out $(OBJDIR)/main.o, $(OBJ)) | $(BINDIR)
 	$(CC) -o $(TSTBIN) $(TSTOBJ) $(filter-out $(OBJDIR)/main.o, $(OBJ)) $(LIB)
 
 test: $(TSTBIN)
-	bin/test
+	bin/test --reporter junit --out results.xml
 
 coverage: test
 	lcov --capture --directory . --output-file coverage.info
