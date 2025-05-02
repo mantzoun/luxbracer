@@ -24,10 +24,6 @@ namespace luxbracer {
     int main(int argc, char** argv)
     {
         logger.info("Starting Discord Bot\n");
-        bot.set_logger(&logger);
-        std::string token = ""
-        std::string id = "myid";
-        bot.init(token, id);
 
         Planet p("p1", "s1", 0);
         System s("s1", 0);
@@ -69,6 +65,12 @@ namespace luxbracer {
         engine.setLogger(&logger);
         engine.systemAdd(s);
         s.planetAdd(p);
+
+        bot.set_logger(&logger);
+        bot.set_engine(&engine);
+        std::string token = ""
+        std::string id = "myid";
+        bot.init(token, id);
 
         while(1){
             usleep(60 * 1000 * 1000);

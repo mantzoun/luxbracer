@@ -1,5 +1,9 @@
 #include "discord_bot.h"
 
+
+static std::vector<std::string> delete_commands = {};
+static std::vector<std::string> existing_commands = {};
+
 static std::vector<std::vector<std::string>> guild_commands = {
     {"channel_create", "Create a new channel",
         "string", "name", "the channel name", "true",
@@ -13,33 +17,37 @@ static std::vector<std::vector<std::string>> guild_commands = {
     },
     {"channel_rename", "Rename a channel",
         "string", "name", "the channel name", "true",
-        "string", "new_name", "the new name" "true",
+        "string", "new_name", "the new name", "true",
+    },
+    {"system_create", "Add a system",
+        "string", "name", "the system name", "true",
+    },
+    {"system_delete", "Delete a system",
+        "string", "name", "the system name", "true",
+    },
+    {"planet_create", "Add a planet",
+        "string", "name", "the planet name", "true",
+        "string", "system", "the parent system name", "true",
+    },
+    {"planet_delete", "Delete a planet",
+        "string", "name", "the planet name", "true",
+    },
+    {"location_create", "Add a location",
+        "string", "name", "the location name", "true",
+        "string", "planet", "the parent planet name", "true",
+    },
+    {"location_delete", "Delete a location",
+        "string", "name", "the location name", "true",
     },
 };
 
-static int total_commands = 0;
-std::mutex myMutex;
-
 namespace luxbracer {
     dpp::command_completion_event_t DiscordBot::guild_command_delete_counter(dpp::confirmation_callback_t value) {
-        std::lock_guard<std::mutex> lock(myMutex); // Locks the mutex
-        static int calls = 0;
-
-        this->discord_iface->log(dpp::ll_debug, "Guild Command Delete Callback");
-        if ( value.is_error() == true ){
-            dpp::error_info err = value.get_error();
-            this->discord_iface->log(dpp::ll_error, "Error " + err.message);
-        }
-
-        if (++calls == total_commands) {
-            //all deleted, register now
-            register_guild_commands();
-        }
 
         return NULL;
     }
 
-    dpp::command_completion_event_t DiscordBot::delete_guild_commands(dpp::confirmation_callback_t value) {
+    dpp::command_completion_event_t DiscordBot::update_guild_commands(dpp::confirmation_callback_t value) {
         this->discord_iface->log(dpp::ll_debug, "Guild Command cleanup Callback");
         if ( value.is_error() == true ){
             dpp::error_info err = value.get_error();
@@ -49,9 +57,17 @@ namespace luxbracer {
         dpp::slashcommand_map map = std::get<dpp::slashcommand_map>(value.value);
 
         for (auto& it: map) {
-            total_commands++;
             dpp::snowflake id = it.first;
             dpp::slashcommand command = it.second;
+
+            existing_commands.push_back(command.name);
+
+            bool found = std::find(delete_commands.begin(), delete_commands.end(), command.name) != delete_commands.end();
+
+            if (!found) {
+                logger->debug("Skipping delete command " + command.name);
+                continue;
+            }
 
             this->discord_iface->log(dpp::ll_debug, "Delete " + command.name);
 
@@ -60,8 +76,16 @@ namespace luxbracer {
             this->discord_iface->guild_command_delete(id, this->guild_id, callback);
         }
 
-        if (total_commands == 0) {
-            register_guild_commands();
+        for (const auto& command : guild_commands) {
+
+            bool found = std::find(existing_commands.begin(), existing_commands.end(), command[0]) != existing_commands.end();
+
+            if (found) {
+                logger->debug("Skipping create command " + command[0]);
+                continue;
+            }
+
+            register_guild_command(command);
         }
 
         return NULL;
@@ -80,29 +104,19 @@ namespace luxbracer {
             dpp::snowflake id = it.first;
             dpp::slashcommand command = it.second;
 
+            bool found = std::find(delete_commands.begin(), delete_commands.end(), command.name) != delete_commands.end();
+
+            if (!found) {
+                logger->debug("Skipping command " + command.name);
+                continue;
+            }
+
             this->discord_iface->log(dpp::ll_debug, "Delete " + command.name);
             this->discord_iface->global_command_delete(id, NULL);
         }
 
         return NULL;
     }
-
-    std::vector<std::vector<std::string>> guild_commands = {
-        {"channel_create", "Create a new channel",
-            "string", "name", "the channel name", "true",
-            "string", "parent", "the channel parent", "false",
-            "string_choice", "type", "the channel type", "false",
-                "choice", "Text", "TextChannel",
-                "choice", "Category", "Category",
-        },
-        {"channel_delete", "Delete a channel",
-            "string", "name", "the channel name", "true",
-        },
-        {"channel_rename", "Rename a channel",
-            "string", "name", "the channel name", "true",
-            "string", "new_name", "the new name", "true",
-        },
-    };
 
     void DiscordBot::register_guild_command(std::vector<std::string> command) {
         dpp::slashcommand cmd = dpp::slashcommand(command[0], command[1], this->discord_iface->me.id);
@@ -145,7 +159,7 @@ namespace luxbracer {
         this->discord_iface->log(dpp::ll_debug, "Register slash commands");
 
         std::function<void(const dpp::confirmation_callback_t&)> callback =
-        std::bind(&DiscordBot::delete_guild_commands, this, std::placeholders::_1);
+        std::bind(&DiscordBot::update_guild_commands, this, std::placeholders::_1);
         this->discord_iface->guild_commands_get(guild_id, callback);
 
         callback = std::bind(&DiscordBot::delete_global_commands, this, std::placeholders::_1);
@@ -167,8 +181,97 @@ namespace luxbracer {
                 event.reply("command received");
 
                 this->slash_commands_handle_channel_rename(event);
-             }
+            } else if (event.command.get_command_name() == "system_create") {
+                event.reply("command received");
+
+                this->slash_commands_handle_system_create(event);
+            } else if (event.command.get_command_name() == "system_delete") {
+                event.reply("command received");
+
+                this->slash_commands_handle_system_delete(event);
+            } else if (event.command.get_command_name() == "planet_create") {
+                event.reply("command received");
+
+                this->slash_commands_handle_planet_create(event);
+            } else if (event.command.get_command_name() == "planet_delete") {
+                event.reply("command received");
+
+                this->slash_commands_handle_planet_delete(event);
+            } else if (event.command.get_command_name() == "location_create") {
+                event.reply("command received");
+
+                this->slash_commands_handle_location_create(event);
+            } else if (event.command.get_command_name() == "location_delete") {
+                event.reply("command received");
+
+                this->slash_commands_handle_location_delete(event);
+            }
 	}
+
+    void DiscordBot::system_create(std::string name) {
+        if (this->engine->systemAdd(name) == ENGINE_OK) {
+            this->channel_create(0, name, dpp::CHANNEL_TEXT);
+        }
+    }
+
+    void DiscordBot::planet_create(std::string name, std::string system) {
+
+    }
+
+    void DiscordBot::location_create(std::string name, std::string planet) {
+
+    }
+
+    void DiscordBot::system_delete(std::string name) {
+
+    }
+
+    void DiscordBot::planet_delete(std::string name) {
+
+    }
+
+    void DiscordBot::location_delete(std::string name){
+
+    }
+
+
+    void DiscordBot::slash_commands_handle_system_create(const dpp::slashcommand_t & event) {
+        std::string name = std::get<std::string>(event.get_parameter("name"));
+
+        this->system_create(name);
+    }
+
+    void DiscordBot::slash_commands_handle_system_delete(const dpp::slashcommand_t & event) {
+        std::string name = std::get<std::string>(event.get_parameter("name"));
+
+        this->system_delete(name);
+    }
+
+    void DiscordBot::slash_commands_handle_planet_create(const dpp::slashcommand_t & event){
+        std::string name = std::get<std::string>(event.get_parameter("name"));
+        std::string system = std::get<std::string>(event.get_parameter("system"));
+
+        this->planet_create(name, system);
+    }
+
+    void DiscordBot::slash_commands_handle_planet_delete(const dpp::slashcommand_t & event){
+        std::string name = std::get<std::string>(event.get_parameter("name"));
+
+        this->planet_delete(name);
+    }
+
+    void DiscordBot::slash_commands_handle_location_create(const dpp::slashcommand_t & event){
+        std::string name = std::get<std::string>(event.get_parameter("name"));
+        std::string planet = std::get<std::string>(event.get_parameter("planet"));
+
+        this->location_create(name, planet);
+    }
+
+    void DiscordBot::slash_commands_handle_location_delete(const dpp::slashcommand_t & event){
+        std::string name = std::get<std::string>(event.get_parameter("name"));
+
+        this->location_delete(name);
+    }
 
     void DiscordBot::slash_commands_handle_channel_delete(const dpp::slashcommand_t & event) {
         std::string name = std::get<std::string>(event.get_parameter("name"));

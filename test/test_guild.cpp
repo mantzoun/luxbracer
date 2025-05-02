@@ -2,20 +2,20 @@
 #include "discord_guild.h"
 
 namespace luxbracer {
-    struct Testcase {
-        Testcase()
+    struct GuildTestcase {
+        GuildTestcase()
             : logger(LUX_LOG_DEBUG)
         {
         }
 
-        ~Testcase() {
+        ~GuildTestcase() {
         }
 
         Logger logger;
     };
 
 
-    TEST_CASE_METHOD(Testcase, "CheckDeleteMissingChannel", "GUILD_GROUP") {
+    TEST_CASE_METHOD(GuildTestcase, "CheckDeleteMissingChannel", "GUILD_GROUP") {
         DiscordGuild guild(0);
         guild.set_logger(&logger);
 

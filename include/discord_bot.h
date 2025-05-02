@@ -16,6 +16,7 @@
 #include "dpp/guild.h"
 
 #include "lux_logger.h"
+#include "engine.h"
 
 #include "discord_guild.h"
 #include "discord_channel.h"
@@ -37,6 +38,8 @@ namespace luxbracer {
     {
         private:
             Logger *        logger = NULL;
+            Engine *        engine = NULL;
+
             std::string     bot_id = "";
             DiscordGuild *  guild = NULL;
 
@@ -66,6 +69,8 @@ namespace luxbracer {
              * @param logger The logger object
              */
             void set_logger(Logger * logger);
+
+            void set_engine(Engine * engine);
 
             /**
              * @brief Initialize commands
@@ -115,6 +120,22 @@ namespace luxbracer {
             void slash_commands_handle_channel_create(const dpp::slashcommand_t & event);
             void slash_commands_handle_channel_delete(const dpp::slashcommand_t & event);
             void slash_commands_handle_channel_rename(const dpp::slashcommand_t & event);
+
+            void system_create(std::string name);
+            void planet_create(std::string name, std::string system);
+            void location_create(std::string name, std::string planet);
+
+            void system_delete(std::string name);
+            void planet_delete(std::string name);
+            void location_delete(std::string name);
+
+            void slash_commands_handle_system_create(const dpp::slashcommand_t & event);
+            void slash_commands_handle_system_delete(const dpp::slashcommand_t & event);
+            void slash_commands_handle_planet_create(const dpp::slashcommand_t & event);
+            void slash_commands_handle_planet_delete(const dpp::slashcommand_t & event);
+            void slash_commands_handle_location_create(const dpp::slashcommand_t & event);
+            void slash_commands_handle_location_delete(const dpp::slashcommand_t & event);
+
             void register_guild_commands(void);
             void register_guild_command(std::vector<std::string> command);
 
@@ -138,7 +159,7 @@ namespace luxbracer {
             dpp::command_completion_event_t user_get_guilds_callback(dpp::confirmation_callback_t value);
             dpp::command_completion_event_t channels_get_callback(dpp::confirmation_callback_t value);
             dpp::command_completion_event_t delete_global_commands(dpp::confirmation_callback_t value);
-            dpp::command_completion_event_t delete_guild_commands(dpp::confirmation_callback_t value);
+            dpp::command_completion_event_t update_guild_commands(dpp::confirmation_callback_t value);
             dpp::command_completion_event_t guild_command_delete_counter(dpp::confirmation_callback_t value);
             dpp::command_completion_event_t channels_create_cb(dpp::confirmation_callback_t value);
     };

@@ -29,6 +29,8 @@ namespace luxbracer {
 
             std::string name(void) const;
 
+            uint64_t id(void);
+
             systemError planetAdd(Planet planet);
             void setLogger(Logger * l);
     };
