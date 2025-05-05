@@ -20,7 +20,7 @@ LIB = -ldpp \
 
 FILES = main.cpp discord_bot.cpp discord_channel.cpp discord_guild.cpp discord_commands.cpp lux_logger.cpp planet.cpp system.cpp engine.cpp
 
-TEST_FILES = test_main.cpp test_guild.cpp
+TEST_FILES = test_main.cpp test_guild.cpp test_engine.cpp
 
 SRC = $(addprefix $(SRCDIR)/,$(FILES))
 OBJ = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o, $(SRC))
@@ -30,7 +30,7 @@ TST = $(addprefix $(TSTDIR)/,$(TEST_FILES))
 TSTOBJ = $(patsubst $(TSTDIR)/%.cpp,$(OBJDIR)/%.o, $(TST))
 TSTBIN = $(BINDIR)/test
 
-.PHONY: all clean dox test
+.PHONY: all clean dox test test_ci
 
 all: $(BIN)
 
@@ -68,8 +68,11 @@ $(TSTOBJ): $(OBJDIR)/%.o: $(TSTDIR)/%.cpp | $(OBJDIR)
 $(TSTBIN): $(TSTOBJ) $(filter-out $(OBJDIR)/main.o, $(OBJ)) | $(BINDIR)
 	$(CC) -o $(TSTBIN) $(TSTOBJ) $(filter-out $(OBJDIR)/main.o, $(OBJ)) $(LIB)
 
-test: $(TSTBIN)
+test_ci: $(TSTBIN)
 	bin/test --reporter junit --out results.xml
+
+test: $(TSTBIN)
+	bin/test
 
 coverage: test
 	lcov --capture --directory . --output-file coverage.info

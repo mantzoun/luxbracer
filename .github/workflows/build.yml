@@ -44,7 +44,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          make -j4 test
+          make -j4 test_ci
 
       - name: Collect coverage
         run: |

@@ -445,7 +445,12 @@ namespace luxbracer {
 
     void DiscordBot::set_logger(Logger * l)
     {
-    this->logger = l;
+        this->logger = l;
+    }
+
+    void DiscordBot::set_engine(Engine * e)
+    {
+        this->engine = e;
     }
 
     //std::string DiscordBot::bot_id_get(void)

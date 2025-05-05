@@ -21,6 +21,10 @@ namespace luxbracer {
         return _name;
     }
 
+    uint64_t System::id() {
+        return this->_id;
+    }
+
     void System::setLogger(Logger * l) {
         logger = l;
     }
