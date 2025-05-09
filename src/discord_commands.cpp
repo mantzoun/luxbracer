@@ -1,6 +1,5 @@
 #include "discord_bot.h"
 
-
 static std::vector<std::string> delete_commands = {"location_create", "location_delete"};
 static std::vector<std::string> existing_commands = {};
 
@@ -153,13 +152,13 @@ namespace luxbracer {
     }
 
     void DiscordBot::slash_commands_handle(const dpp::slashcommand_t & event) {
-	        /* Check which command they ran */
+            /* Check which command they ran */
             this->discord_iface->log(dpp::ll_warning, "COMMAND: " + event.command.get_command_name());
-	        if (event.command.get_command_name() == "channel_create") {
-	            event.reply("command received");
+            if (event.command.get_command_name() == "channel_create") {
+                event.reply("command received");
 
                 this->slash_commands_handle_channel_create(event);
-	        } else if (event.command.get_command_name() == "channel_delete") {
+            } else if (event.command.get_command_name() == "channel_delete") {
                 event.reply("command received");
 
                 this->slash_commands_handle_channel_delete(event);
@@ -188,13 +187,13 @@ namespace luxbracer {
 
     void DiscordBot::system_create(const std::string& name) {
         if (this->engine->systemAdd(name) == ENGINE_OK) {
-            this->channel_create(0, name, dpp::CHANNEL_TEXT);
+            this->channel_create(0, name, dpp::CHANNEL_CATEGORY);
         }
     }
 
     void DiscordBot::planet_create(const std::string& name, const std::string& system) {
         if (this->engine->planetAdd(name, system) == ENGINE_OK) {
-            DiscordChannel * parent = this->guild->channel_get("system").front();
+            DiscordChannel * parent = this->guild->channel_get(system).front();
             this->channel_create(parent->id(), name, dpp::CHANNEL_TEXT);
         }
     }

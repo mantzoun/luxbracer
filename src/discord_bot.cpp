@@ -6,6 +6,8 @@
 
 #include "discord_bot.h"
 
+static std::vector<std::string> non_engine_categories = {"Text Channels"};
+
 namespace luxbracer {
     void register_guild_commands();
 
@@ -16,7 +18,7 @@ namespace luxbracer {
     // ===================================================================
     //                          MESSAGES
     // ===================================================================
-    void DiscordBot::post_message(std::string channel_name, std::string text) {
+    void DiscordBot::post_message(const std::string & channel_name, const std::string & text) {
         dpp::message message;
 
         std::list<DiscordChannel *> channels = this->guild->channel_get(channel_name);
@@ -38,7 +40,7 @@ namespace luxbracer {
     // ===================================================================
     //                          CHANNELS
     // ===================================================================
-    void DiscordBot::channel_create(dpp::snowflake parent_id, std::string name, dpp::channel_type chanType) {
+    void DiscordBot::channel_create(dpp::snowflake parent_id, const std::string & name, dpp::channel_type chanType) {
         dpp::channel chan;
 
         chan.name = name;
@@ -52,7 +54,7 @@ namespace luxbracer {
         this->discord_iface->channel_create(chan);
     }
 
-    void DiscordBot::channel_delete(std::string name) {
+    void DiscordBot::channel_delete(const std::string & name) {
         std::list<DiscordChannel *> channels = this->guild->channel_get(name);
 
         if (channels.size() != 1) {
@@ -64,7 +66,7 @@ namespace luxbracer {
         this->discord_iface->channel_delete(discord_channel->id(), NULL);
     }
 
-    void DiscordBot::channel_rename(std::string name, std::string new_name) {
+    void DiscordBot::channel_rename(const std::string & name, std::string new_name) {
         std::list<DiscordChannel *> channels = this->guild->channel_get(name);
 
         if (channels.size() != 1) {
@@ -163,11 +165,36 @@ namespace luxbracer {
             this->guild->channel_add(channel);
 
             this->logger->debug("Found channel " + channel.name + " with id " + std::to_string(id));
-            // this->channels_list[c.name] = id;
+            //TODO WHEN READING FROM SAVE FILE?
+            if (channel.parent_id == 0 && channel.get_type() == dpp::CHANNEL_CATEGORY) {
+                if (std::find(non_engine_categories.begin(),
+                              non_engine_categories.end(),
+                              channel.name) != non_engine_categories.end()) {
+                    // channel found in ignore list
+                    continue;
+                }
+                this->logger->debug("Adding system " + channel.name + " to engine");
+                this->engine->systemAdd(channel.name);
+            }
+        }
 
-            //    if (c.name == "devices") {
-            //        this->discord_iface->messages_get(id, 0, 0, 0, 0, &existing_devices);
-            //    }
+        // Added systems in first pass, now add planets
+        for (auto& it: channelmap) {
+            id = it.first;
+            channel = it.second;
+
+            parent_id = channel.parent_id;
+
+            if (parent_id != 0) {
+                DiscordChannel * parent = this->guild->channel_get_by_id(parent_id);
+
+                if (parent == NULL){
+                    this->logger->warn("Could not fidn parent of " + channel.name);
+                    continue;
+                }
+                this->logger->debug("Adding planet " + channel.name + " to system " + parent->name());
+                this->engine->planetAdd(channel.name, parent->name());
+            }
         }
 
         for (std::string channel_name : default_channels) {
@@ -344,7 +371,7 @@ namespace luxbracer {
     //    }
     //}
 
-    void DiscordBot::init(std::string token, std::string id)
+    void DiscordBot::init(std::string token, const std::string & id)
     {
         this->discord_iface = new dpp::cluster(token);
 

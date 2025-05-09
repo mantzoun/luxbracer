@@ -63,8 +63,6 @@ namespace luxbracer {
     while(1){
         usleep(1000000);
         engine.setLogger(&logger);
-        engine.systemAdd(s);
-        s.planetAdd(p);
 
         bot.set_logger(&logger);
         bot.set_engine(&engine);

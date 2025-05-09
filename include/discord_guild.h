@@ -27,6 +27,8 @@ namespace luxbracer {
             int channel_update(const dpp::channel_update_t & channel);
 
             std::list<DiscordChannel *> channel_get(const std::string& name, dpp::snowflake channel_id = 0, dpp::snowflake parent_id = 0);
+            std::list<DiscordChannel> channel_get_all(void) const;
+            DiscordChannel * channel_get_by_id(dpp::snowflake id);
     };
 }
 
