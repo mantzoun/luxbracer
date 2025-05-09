@@ -2,10 +2,12 @@
 
 SRCDIR = src
 INCDIR = include
+EXTDIR = ext
 OBJDIR = obj
 BINDIR = bin
 DOCDIR = doc
 TSTDIR = test
+COVERAGEDIR = coverage
 
 DOX = doxygen
 DOXYFILE = Doxyfile
@@ -13,6 +15,7 @@ DOXYFILE = Doxyfile
 CC = g++
 CFLAGS = -Wall -g -std=c++20 -Wno-psabi -O0 -fprofile-arcs -ftest-coverage
 INCLUDES = -I$(INCDIR) \
+           -I$(EXTDIR) \
 
 LIB = -ldpp \
       -lgcov \
@@ -60,7 +63,7 @@ cpplint:
 	@cpplint $(SRC) $(INCDIR)/*
 
 cppcheck:
-	@cppcheck $(SRC) --enable=all --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR)
+	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=missingInclude -I$(INCDIR) $(EXTDIR)
 
 $(TSTOBJ): $(OBJDIR)/%.o: $(TSTDIR)/%.cpp | $(OBJDIR)
 	$(CC) -o $@ $(CFLAGS) $(INCLUDES) -c $<
@@ -75,9 +78,10 @@ test: $(TSTBIN)
 	bin/test
 
 coverage: test
+	@rm -rf ./$(COVERAGEDIR)
 	lcov --capture --directory . --output-file coverage.info
 	lcov --remove coverage.info '/usr/*' --output-file coverage_clean.info
-	genhtml coverage_clean.info --output-directory out
+	genhtml coverage_clean.info --output-directory $(COVERAGEDIR)
 
 
 runner:

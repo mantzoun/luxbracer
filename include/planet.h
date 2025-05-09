@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 
+#include "json.hpp"
 //#include "stateEntity,h"
 //#include "accessPoint"
 
@@ -63,9 +64,15 @@ namespace luxbracer {
 //            bool _atmoBreathable;
 //            biosphereType _biosphere;
         public:
+            Planet(void) = default;
             Planet(const std::string& name, const std::string& system, uint64_t id);
 
+            ~Planet(void);
             std::string name(void) const;
+            std::string system(void) const;
+
+            friend void to_json(nlohmann::json& j, const Planet & p);
+            friend void from_json(const nlohmann::json& j, Planet & p);
     };
 }
 

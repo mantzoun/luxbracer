@@ -5,34 +5,37 @@
 #include <string>
 #include <map>
 
+#include "json.hpp"
 //#include "stateEntity,h"
 //#include "accessPoint"
+#include "engine_types.h"
 #include "planet.h"
 #include "lux_logger.h"
 
 namespace luxbracer {
-    enum systemError {
-        SYSTEM_OK,
-        SYSTEM_ERROR,
-        SYSTEM_ITEM_EXISTS,
-    };
-
     class System {
         private:
             Logger * logger = NULL;
             std:: string    _name;
             uint64_t        _id;
 
-            std::map<std::string, Planet> _planets;
+            std::map<std::string, Planet> planet_map;
         public:
+            System(void) = default;
             System(const std::string& name, uint64_t id);
 
             std::string name(void) const;
 
-            uint64_t id(void);
+            uint64_t id(void) const;
 
-            systemError planetAdd(Planet planet);
+            engineError planetAdd(Planet planet);
+            engineError planetRemove(const std::string & name);
+            Planet * planetGet(const std::string & name);
+
             void setLogger(Logger * l);
+
+            friend void to_json(nlohmann::json& j, const System & s);
+            friend void from_json(const nlohmann::json& j, System & s);
     };
 }
 

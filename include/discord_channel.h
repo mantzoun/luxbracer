@@ -11,7 +11,7 @@ namespace luxbracer {
             dpp::snowflake  _parent;
             std::string _name;
         public:
-            DiscordChannel(dpp::snowflake id, dpp::snowflake parent, std::string name);
+            DiscordChannel(dpp::snowflake id, dpp::snowflake parent, const std::string & name);
 
             dpp::snowflake  id(void) const;
             dpp::snowflake  parent(void) const;
