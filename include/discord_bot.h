@@ -54,7 +54,7 @@ namespace luxbracer {
              *
              * @param token Thi discord authentication token
              */
-            void init(std::string token, std::string id);
+            void init(std::string token, const std::string & id);
 
             void initialize_guild(dpp::snowflake);
 
@@ -106,16 +106,16 @@ namespace luxbracer {
              * @param guild_id The server where teh channel will be created
              * @param name The channel name
              */
-            void channel_create(dpp::snowflake parent_id, std::string name, dpp::channel_type chanType);
+            void channel_create(dpp::snowflake parent_id, const std::string & name, dpp::channel_type chanType);
 
             /**
              * @brief Delete a channel
              *
              * @param name The channel name
              */
-            void channel_delete(std::string name);
+            void channel_delete(const std::string & name);
 
-            void channel_rename(std::string name, std::string new_name);
+            void channel_rename(const std::string & name, std::string new_name);
 
             void slash_commands_handle_channel_create(const dpp::slashcommand_t & event);
             void slash_commands_handle_channel_delete(const dpp::slashcommand_t & event);
@@ -150,7 +150,7 @@ namespace luxbracer {
              *
              * @return The bot id
              */
-            void post_message(std::string channel_name, std::string text);
+            void post_message(const std::string & channel_name, const std::string & text);
 
             dpp::command_completion_event_t user_get_guilds_callback(dpp::confirmation_callback_t value);
             dpp::command_completion_event_t channels_get_callback(dpp::confirmation_callback_t value);

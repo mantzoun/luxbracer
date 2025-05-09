@@ -93,4 +93,23 @@ namespace luxbracer {
 
         return result;
     }
+
+    std::list<DiscordChannel> DiscordGuild::channel_get_all(void) const{
+        return channels;
+    }
+
+    DiscordChannel * DiscordGuild::channel_get_by_id(dpp::snowflake id) {
+        if (id == 0) {
+            return NULL;
+        }
+
+        auto it = std::find_if(channels.begin(), channels.end(),
+        [&](const auto& channel) { return id == channel.id(); });
+
+        if (it != channels.end()) {
+            return &(*it);
+        }
+
+        return NULL;
+    }
 }

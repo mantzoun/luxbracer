@@ -25,12 +25,7 @@ namespace luxbracer {
     {
         logger.info("Starting Discord Bot\n");
 
-        Planet p("p1", "s1", 0);
-        System s("s1", 0);
-
         engine.setLogger(&logger);
-        engine.systemAdd(s);
-        s.planetAdd(p);
 
         bot.set_logger(&logger);
         bot.set_engine(&engine);
