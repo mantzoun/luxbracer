@@ -79,7 +79,7 @@ test: $(TSTBIN)
 coverage: test
 	@rm -rf ./$(COVERAGEDIR)
 	lcov --capture --directory . --output-file coverage.info
-	lcov --remove coverage.info '/usr/*' --output-file coverage_clean.info
+	lcov --remove coverage.info '/usr/*' '*/test/test_*' '*/ext/*' --output-file coverage_clean.info
 	genhtml coverage_clean.info --output-directory $(COVERAGEDIR)
 
 
