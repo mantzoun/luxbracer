@@ -62,7 +62,7 @@ cpplint:
 	@cpplint $(SRC) $(INCDIR)/*
 
 cppcheck:
-	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=missingInclude -I$(INCDIR) $(EXTDIR)
+	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR) $(EXTDIR)
 
 $(TSTOBJ): $(OBJDIR)/%.o: $(TSTDIR)/%.cpp | $(OBJDIR)
 	$(CC) -o $@ $(CFLAGS) $(INCLUDES) -c $<
