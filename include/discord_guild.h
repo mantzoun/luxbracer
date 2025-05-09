@@ -15,7 +15,7 @@ namespace luxbracer {
             int verify_and_delete_channel(const DiscordChannel& channel);
             int verify_and_update_channel(const DiscordChannel& channel);
         public:
-            DiscordGuild(const dpp::snowflake id);
+            explicit DiscordGuild(const dpp::snowflake id);
 
             dpp::snowflake id(void) const;
 

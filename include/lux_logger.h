@@ -38,7 +38,7 @@ namespace luxbracer {
              * @brief Custom logger constructor
              * @param lvl The log severity level
              */
-            Logger(log_lvl lvl);
+            explicit Logger(log_lvl lvl);
 
             /**
              * @brief Set the log level

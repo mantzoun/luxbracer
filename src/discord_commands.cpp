@@ -1,7 +1,7 @@
 #include "discord_bot.h"
 
 
-static std::vector<std::string> delete_commands = {};
+static std::vector<std::string> delete_commands = {"location_create", "location_delete"};
 static std::vector<std::string> existing_commands = {};
 
 static std::vector<std::vector<std::string>> guild_commands = {
@@ -32,21 +32,9 @@ static std::vector<std::vector<std::string>> guild_commands = {
     {"planet_delete", "Delete a planet",
         "string", "name", "the planet name", "true",
     },
-    {"location_create", "Add a location",
-        "string", "name", "the location name", "true",
-        "string", "planet", "the parent planet name", "true",
-    },
-    {"location_delete", "Delete a location",
-        "string", "name", "the location name", "true",
-    },
 };
 
 namespace luxbracer {
-    dpp::command_completion_event_t DiscordBot::guild_command_delete_counter(dpp::confirmation_callback_t value) {
-
-        return NULL;
-    }
-
     dpp::command_completion_event_t DiscordBot::update_guild_commands(dpp::confirmation_callback_t value) {
         this->discord_iface->log(dpp::ll_debug, "Guild Command cleanup Callback");
         if ( value.is_error() == true ){
@@ -71,9 +59,7 @@ namespace luxbracer {
 
             this->discord_iface->log(dpp::ll_debug, "Delete " + command.name);
 
-            std::function<void(const dpp::confirmation_callback_t&)> callback =
-            std::bind(&DiscordBot::guild_command_delete_counter, this, std::placeholders::_1);
-            this->discord_iface->guild_command_delete(id, this->guild_id, callback);
+            this->discord_iface->guild_command_delete(id, this->guild_id);
         }
 
         for (const auto& command : guild_commands) {
@@ -197,43 +183,29 @@ namespace luxbracer {
                 event.reply("command received");
 
                 this->slash_commands_handle_planet_delete(event);
-            } else if (event.command.get_command_name() == "location_create") {
-                event.reply("command received");
-
-                this->slash_commands_handle_location_create(event);
-            } else if (event.command.get_command_name() == "location_delete") {
-                event.reply("command received");
-
-                this->slash_commands_handle_location_delete(event);
             }
-	}
+    }
 
-    void DiscordBot::system_create(std::string name) {
+    void DiscordBot::system_create(const std::string& name) {
         if (this->engine->systemAdd(name) == ENGINE_OK) {
             this->channel_create(0, name, dpp::CHANNEL_TEXT);
         }
     }
 
-    void DiscordBot::planet_create(std::string name, std::string system) {
+    void DiscordBot::planet_create(const std::string& name, const std::string& system) {
+        if (this->engine->planetAdd(name, system) == ENGINE_OK) {
+            DiscordChannel * parent = this->guild->channel_get("system").front();
+            this->channel_create(parent->id(), name, dpp::CHANNEL_TEXT);
+        }
+    }
+
+    void DiscordBot::system_delete(const std::string& name) {
 
     }
 
-    void DiscordBot::location_create(std::string name, std::string planet) {
+    void DiscordBot::planet_delete(const std::string& name) {
 
     }
-
-    void DiscordBot::system_delete(std::string name) {
-
-    }
-
-    void DiscordBot::planet_delete(std::string name) {
-
-    }
-
-    void DiscordBot::location_delete(std::string name){
-
-    }
-
 
     void DiscordBot::slash_commands_handle_system_create(const dpp::slashcommand_t & event) {
         std::string name = std::get<std::string>(event.get_parameter("name"));
@@ -258,19 +230,6 @@ namespace luxbracer {
         std::string name = std::get<std::string>(event.get_parameter("name"));
 
         this->planet_delete(name);
-    }
-
-    void DiscordBot::slash_commands_handle_location_create(const dpp::slashcommand_t & event){
-        std::string name = std::get<std::string>(event.get_parameter("name"));
-        std::string planet = std::get<std::string>(event.get_parameter("planet"));
-
-        this->location_create(name, planet);
-    }
-
-    void DiscordBot::slash_commands_handle_location_delete(const dpp::slashcommand_t & event){
-        std::string name = std::get<std::string>(event.get_parameter("name"));
-
-        this->location_delete(name);
     }
 
     void DiscordBot::slash_commands_handle_channel_delete(const dpp::slashcommand_t & event) {

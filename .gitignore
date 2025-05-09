@@ -2,3 +2,6 @@
 bin/
 obj/
 doc/
+coverage*
+*json
+*xml
