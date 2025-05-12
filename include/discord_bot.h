@@ -1,4 +1,6 @@
 /*
+ * Copyright 2025 Stavros Mantzouneas
+ *
  * discord_bot.h
  *
  * handle connection with the Discord servers
@@ -20,6 +22,7 @@
 
 #include "discord_guild.h"
 #include "discord_channel.h"
+#include "discord_postman.h"
 
 #include <stdio.h>
 #include <map>
@@ -34,7 +37,7 @@ namespace luxbracer {
      *        discord, and offer a callback function for message
      *        posting
      */
-    class DiscordBot //: public luxbracer::CallbackClass
+    class DiscordBot : public DiscordPostman
     {
         private:
             Logger *        logger = NULL;
@@ -48,6 +51,10 @@ namespace luxbracer {
 
         public:
             DiscordBot(void);
+
+            bool init_complete = false;
+
+            void post(const std::string & message, const std::string & channel) override;
 
             /**
              * @brief Initiaze the bot

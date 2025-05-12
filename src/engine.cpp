@@ -6,8 +6,28 @@ namespace luxbracer {
 
     }
 
+    void Engine::set_postman(DiscordPostman * p) {
+        postman = p;
+    }
+
     uint64_t Engine::next_id() {
         return this->index++;
+    }
+
+    void Engine::execute_player_actions() {
+
+    }
+
+    void Engine::date_advance() {
+
+    }
+
+    void Engine::systems_advance() {
+
+    }
+
+    void Engine::planets_advanve() {
+
     }
 
     engineError Engine::systemAdd(System & system) {
@@ -73,6 +93,14 @@ namespace luxbracer {
 
     void Engine::setLogger(Logger * l) {
         logger = l;
+    }
+
+    void Engine::execute_game_loop() {
+        postman->post("Game Loop Test", "syslog");
+        this->execute_player_actions();
+        this->date_advance();
+        this->systems_advance();
+        this->planets_advanve();
     }
 
     void to_json(nlohmann::json& j, const Engine & e) {
