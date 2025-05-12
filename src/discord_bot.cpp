@@ -16,6 +16,13 @@ namespace luxbracer {
     }
 
     // ===================================================================
+    //                          INTERFACE
+    // ===================================================================
+    void DiscordBot::post(const std::string & message, const std::string & channel) {
+        this->post_message(channel, message);
+    }
+
+    // ===================================================================
     //                          MESSAGES
     // ===================================================================
     void DiscordBot::post_message(const std::string & channel_name, const std::string & text) {
@@ -232,6 +239,8 @@ namespace luxbracer {
         // m.channel_id = channel_map["syslog"];
         // m.content    = "Bot conneced, bot id " + luxbracer_discord_this->discord_iface->bot_id();
         // this->discord_iface->message_create(m, &my_message_cb);
+
+        this->init_complete = true;
 
         return NULL;
     }

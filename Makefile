@@ -60,7 +60,7 @@ dox:  | $(DOCDIR)
 	$(DOX) $(DOXYFILE)
 
 cpplint:
-	@cpplint $(SRC) $(INCDIR)/*
+	@cpplint $(SRC) $(INC)
 
 cppcheck:
 	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR) $(EXTDIR)

@@ -39,8 +39,8 @@ namespace luxbracer {
 
             time_t now = time(0);
             tm *ltm = localtime(&now);
-            char res[30];
-            sprintf(res, "%02d-%02d-%02d %02d:%02d:%02d %s", ltm->tm_year, ltm->tm_mon, ltm->tm_mday,
+            char res[40];
+            sprintf(res, "%04d-%02d-%02d %02d:%02d:%02d %s", 1900 + ltm->tm_year, 1 + ltm->tm_mon, ltm->tm_mday,
                                                              ltm->tm_hour, ltm->tm_min, ltm->tm_sec,
                                                              lux_log_lvl_str[lvl].c_str());
             std::string tstamp = res;
