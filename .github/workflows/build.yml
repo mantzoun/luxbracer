@@ -63,3 +63,20 @@ jobs:
           path: |
             ./coverage_clean.info
             out/
+
+  release:
+    runs-on: release
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release binary
+        run: |
+          make release
+
+      - name: Upload release binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: luxbot
+          path: |
+            ./bin/luxbot
