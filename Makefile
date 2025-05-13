@@ -7,6 +7,7 @@ OBJDIR = obj
 BINDIR = bin
 DOCDIR = doc
 TSTDIR = test
+RELDIR = release
 COVERAGEDIR = coverage
 
 DOX = doxygen
@@ -14,6 +15,7 @@ DOXYFILE = Doxyfile
 
 CC = g++
 CFLAGS = -Wall -g -std=c++20 -Wno-psabi -O0 -fprofile-arcs -ftest-coverage
+RELEASE_CFLAGS = -Wall -std=c++20 -Wno-psabi -O3
 INCLUDES = -I$(INCDIR) \
            -I$(EXTDIR) \
 
@@ -32,9 +34,12 @@ TST = $(addprefix $(TSTDIR)/,$(TEST_FILES))
 TSTOBJ = $(patsubst $(TSTDIR)/%.cpp,$(OBJDIR)/%.o, $(TST))
 TSTBIN = $(BINDIR)/test
 
-.PHONY: all clean dox test test_ci
+.PHONY: all rel clean dox test test_ci
 
 all: $(BIN)
+
+release:
+	$(MAKE) BIN=$(BIN) CFLAGS="$(RELEASE_CFLAGS)"
 
 $(BIN): $(OBJ) | $(BINDIR)
 	$(CC) -o $(BIN) $(OBJ) $(LIB)
@@ -52,7 +57,7 @@ $(DOCDIR):
 	@mkdir -p $(DOCDIR)
 
 clean:
-	@rm -rf $(OBJDIR) $(BINDIR)
+	@rm -rf $(OBJDIR) $(BINDIR) $(RELDIR)
 
 dox:  | $(DOCDIR)
 	@rm -rf $(DOCDIR)
