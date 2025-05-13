@@ -1,3 +1,6 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #include <stdexcept>
 
 #include "system.h"
@@ -5,8 +8,7 @@
 namespace luxbracer {
     System::System(const std::string& name, uint64_t id) :
         _name(name),
-        _id(id)
-    {
+        _id(id) {
     }
 
     engineError System::planetAdd(Planet planet) {
@@ -55,7 +57,7 @@ namespace luxbracer {
         logger = l;
     }
 
-    void to_json(nlohmann::json& j, const System & s) {
+    void to_json(nlohmann::json& j, const System & s) {  // NOLINT(runtime/references)
         j = nlohmann::json{
             {"name", s._name},
             {"id", s._id},
@@ -63,9 +65,9 @@ namespace luxbracer {
         };
     }
 
-     void from_json(const nlohmann::json& j, System & s) {
+    void from_json(const nlohmann::json& j, System & s) {  // NOLINT(runtime/references)
         j.at("name").get_to(s._name);
         j.at("id").get_to(s._id);
         j.at("planet_map").get_to(s.planet_map);
     }
-}
+}  // namespace luxbracer

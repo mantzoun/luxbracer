@@ -59,7 +59,7 @@ dox:  | $(DOCDIR)
 	$(DOX) $(DOXYFILE)
 
 cpplint:
-	@cpplint $(SRC) $(INC)
+	@cpplint --linelength=120 --filter=-build/include_subdir,-build/c++11 $(SRC) $(INC)
 
 cppcheck:
 	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR) $(EXTDIR)

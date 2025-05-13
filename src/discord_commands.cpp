@@ -1,3 +1,6 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #include "discord_bot.h"
 
 static std::vector<std::string> delete_commands = {"location_create", "location_delete"};
@@ -36,20 +39,22 @@ static std::vector<std::vector<std::string>> guild_commands = {
 namespace luxbracer {
     dpp::command_completion_event_t DiscordBot::update_guild_commands(dpp::confirmation_callback_t value) {
         this->discord_iface->log(dpp::ll_debug, "Guild Command cleanup Callback");
-        if ( value.is_error() == true ){
+        if ( value.is_error() == true ) {
             dpp::error_info err = value.get_error();
             this->discord_iface->log(dpp::ll_error, "Error " + err.message);
         }
 
         dpp::slashcommand_map map = std::get<dpp::slashcommand_map>(value.value);
 
-        for (auto& it: map) {
+        for (auto& it : map) {
             dpp::snowflake id = it.first;
             dpp::slashcommand command = it.second;
 
             existing_commands.push_back(command.name);
 
-            bool found = std::find(delete_commands.begin(), delete_commands.end(), command.name) != delete_commands.end();
+            bool found = std::find(delete_commands.begin(),
+                                   delete_commands.end(),
+                                   command.name) != delete_commands.end();
 
             if (!found) {
                 logger->debug("Skipping delete command " + command.name);
@@ -62,8 +67,9 @@ namespace luxbracer {
         }
 
         for (const auto& command : guild_commands) {
-
-            bool found = std::find(existing_commands.begin(), existing_commands.end(), command[0]) != existing_commands.end();
+            bool found = std::find(existing_commands.begin(),
+                                   existing_commands.end(),
+                                   command[0]) != existing_commands.end();
 
             if (found) {
                 logger->debug("Skipping create command " + command[0]);
@@ -78,18 +84,20 @@ namespace luxbracer {
 
     dpp::command_completion_event_t DiscordBot::delete_global_commands(dpp::confirmation_callback_t value) {
         this->discord_iface->log(dpp::ll_debug, "Global Command cleanup Callback");
-        if ( value.is_error() == true ){
+        if (value.is_error() == true) {
             dpp::error_info err = value.get_error();
             this->discord_iface->log(dpp::ll_error, "Error " + err.message);
         }
 
         dpp::slashcommand_map map = std::get<dpp::slashcommand_map>(value.value);
 
-        for (auto& it: map) {
+        for (auto& it : map) {
             dpp::snowflake id = it.first;
             dpp::slashcommand command = it.second;
 
-            bool found = std::find(delete_commands.begin(), delete_commands.end(), command.name) != delete_commands.end();
+            bool found = std::find(delete_commands.begin(),
+                                   delete_commands.end(),
+                                   command.name) != delete_commands.end();
 
             if (!found) {
                 logger->debug("Skipping command " + command.name);
@@ -131,7 +139,6 @@ namespace luxbracer {
 
         this->discord_iface->log(dpp::ll_debug, "Register " + cmd.name);
         this->discord_iface->guild_command_create(cmd, this->guild_id);
-
     }
 
     void DiscordBot::register_guild_commands() {
@@ -199,11 +206,9 @@ namespace luxbracer {
     }
 
     void DiscordBot::system_delete(const std::string& name) {
-
     }
 
     void DiscordBot::planet_delete(const std::string& name) {
-
     }
 
     void DiscordBot::slash_commands_handle_system_create(const dpp::slashcommand_t & event) {
@@ -218,14 +223,14 @@ namespace luxbracer {
         this->system_delete(name);
     }
 
-    void DiscordBot::slash_commands_handle_planet_create(const dpp::slashcommand_t & event){
+    void DiscordBot::slash_commands_handle_planet_create(const dpp::slashcommand_t & event) {
         std::string name = std::get<std::string>(event.get_parameter("name"));
         std::string system = std::get<std::string>(event.get_parameter("system"));
 
         this->planet_create(name, system);
     }
 
-    void DiscordBot::slash_commands_handle_planet_delete(const dpp::slashcommand_t & event){
+    void DiscordBot::slash_commands_handle_planet_delete(const dpp::slashcommand_t & event) {
         std::string name = std::get<std::string>(event.get_parameter("name"));
 
         this->planet_delete(name);
@@ -235,7 +240,7 @@ namespace luxbracer {
         std::string name = std::get<std::string>(event.get_parameter("name"));
 
         this->channel_delete(name);
-        //FIXME parents staff in channel hierarchy
+        // FIXME parents staff in channel hierarchy
     }
 
     void DiscordBot::slash_commands_handle_channel_rename(const dpp::slashcommand_t & event) {
@@ -243,7 +248,7 @@ namespace luxbracer {
         std::string new_name = std::get<std::string>(event.get_parameter("new_name"));
 
         this->channel_rename(name, new_name);
-        //FIXME parents staff in channel hierarchy
+        // FIXME parents staff in channel hierarchy
     }
 
     void DiscordBot::slash_commands_handle_channel_create(const dpp::slashcommand_t & event) {
@@ -289,4 +294,4 @@ namespace luxbracer {
 
         this->channel_create(parent_id, name, chanType);
     }
-}
+}  // namespace luxbracer

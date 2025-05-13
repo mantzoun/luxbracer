@@ -1,3 +1,6 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #ifndef ENGINE__H
 #define ENGINE__H
 

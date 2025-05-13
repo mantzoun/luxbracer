@@ -1,3 +1,6 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #ifndef DISCORD_CHANNEL__H
 #define DISCORD_CHANNEL__H
 

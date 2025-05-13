@@ -1,22 +1,26 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #include "discord_channel.h"
 
 namespace luxbracer {
-    DiscordChannel::DiscordChannel(dpp::snowflake id, dpp::snowflake parent, const std::string & name) :
-        _id(id),
-        _parent(parent),
-        _name(name)
-    {
+    DiscordChannel::DiscordChannel(dpp::snowflake id,
+                                   dpp::snowflake parent,
+                                   const std::string & name) :
+                                        _id(id),
+                                        _parent(parent),
+                                        _name(name) {
     }
 
     dpp::snowflake DiscordChannel::id(void) const {
         return _id;
     }
 
-    dpp::snowflake DiscordChannel::parent(void) const{
+    dpp::snowflake DiscordChannel::parent(void) const {
         return _parent;
     }
 
-    std::string DiscordChannel::name(void) const{
+    std::string DiscordChannel::name(void) const {
         return _name;
     }
 
@@ -27,4 +31,4 @@ namespace luxbracer {
     void DiscordChannel::set_name(const std::string& name) {
         _name = name;
     }
-}
+}  // namespace luxbracer

@@ -1,9 +1,11 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #include <stdexcept>
 #include "engine.h"
 
 namespace luxbracer {
-    Engine::Engine(){
-
+    Engine::Engine() {
     }
 
     void Engine::set_postman(DiscordPostman * p) {
@@ -15,19 +17,15 @@ namespace luxbracer {
     }
 
     void Engine::execute_player_actions() {
-
     }
 
     void Engine::date_advance() {
-
     }
 
     void Engine::systems_advance() {
-
     }
 
     void Engine::planets_advanve() {
-
     }
 
     engineError Engine::systemAdd(System & system) {
@@ -103,14 +101,14 @@ namespace luxbracer {
         this->planets_advanve();
     }
 
-    void to_json(nlohmann::json& j, const Engine & e) {
+    void to_json(nlohmann::json& j, const Engine & e) {  // NOLINT(runtime/references)
         j = nlohmann::json{
             {"index", e.index},
             {"system_map", e.system_map}
         };
     }
 
-    void from_json(const nlohmann::json& j, Engine & e) {
+    void from_json(const nlohmann::json& j, Engine & e) {  // NOLINT(runtime/references)
         j.at("index").get_to(e.index);
         j.at("system_map").get_to(e.system_map);
     }
@@ -132,4 +130,4 @@ namespace luxbracer {
         file >> j;
         return j;
     }
-}
+}  // namespace luxbracer

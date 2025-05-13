@@ -1,3 +1,6 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #ifndef PLANET__H
 #define PLANET__H
 

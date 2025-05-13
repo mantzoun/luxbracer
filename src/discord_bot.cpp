@@ -1,4 +1,6 @@
 /*
+ * Copyright 2025 Stavros Mantzouneas
+ *
  * luxbracer_discord_bot.c
  *
  * implementation of CDB_DiscordBot methods
@@ -11,8 +13,7 @@ static std::vector<std::string> non_engine_categories = {"Text Channels"};
 namespace luxbracer {
     void register_guild_commands();
 
-    DiscordBot::DiscordBot(void)
-    {
+    DiscordBot::DiscordBot(void) {
     }
 
     // ===================================================================
@@ -39,7 +40,9 @@ namespace luxbracer {
             message.channel_id = channel->id();
             message.guild_id = this->guild_id;
             message.content = text;
-            logger->debug("Post to channel : " + channel->name() + "," + std::to_string(channel->id()) + "," + std::to_string(channel->parent()));
+            logger->debug("Post to channel : " + channel->name() +
+                          "," + std::to_string(channel->id()) +
+                          "," + std::to_string(channel->parent()));
             this->discord_iface->message_create(message);
         }
     }
@@ -89,66 +92,11 @@ namespace luxbracer {
         channel.set_name(new_name);
         this->discord_iface->channel_edit(channel, NULL);
     }
-    // dpp::channel ch;
 
-    //dpp::command_completion_event_t existing_devices(dpp::confirmation_callback_t value)
-    //{
-    //    this->discord_iface->log(dpp::ll_debug, "devices init Callback");
-    //    if ( value.is_error() == true ){
-    //        dpp::error_info err = value.get_error();
-    //        this->discord_iface->log(dpp::ll_error, "Error " + err.message);
-    //    }
-    //
-    //    dpp::message_map map = std::get<dpp::message_map>(value.value);
-    //
-    //    for (auto& it: map) {
-    //        std::string device_name;
-    //        dpp::message m = it.second;
-    //
-    //        if (m.channel_id == channel_map["devices"]){
-    //            size_t fs = m.content.find(" ");
-    //
-    //            if (fs == std::string::npos){
-    //                device_name = m.content;
-    //            } else {
-    //                device_name = m.content.substr(0, fs);
-    //            }
-    //
-    //            this->discord_iface->log(dpp::ll_debug, "found message for " + device_name);
-    //            device_map[device_name] = m.id;
-    //        }
-    //    }
-    //
-    //    return NULL;
-    //}
-
-    // dpp::command_completion_event_t my_message_cb(dpp::confirmation_callback_t value)
-    // {
-    //    this->discord_iface->log(dpp::ll_debug, "message Callback");
-    //    if ( value.is_error() == true ){
-    //        dpp::error_info err = value.get_error();
-    //        this->discord_iface->log(dpp::ll_error, "Error " + err.message);
-    //    }
-
-    //    dpp::message m = std::get<dpp::message>(value.value);
-
-    //    return NULL;
-    // }
-
-    // dpp::command_completion_event_t DiscordBot::channels_create_cb(dpp::confirmation_callback_t value) {
-    //     dpp::channel channel = std::get<dpp::channel>(value.value);
-
-    //     this->discord_iface->log(dpp::ll_debug, "Created channel " + channel.name + " with id " + std::to_string(channel.id));
-    //     this->channels_list[channel.name] = channel.id;
-
-    //     return NULL;
-    // }
-
-    dpp::command_completion_event_t  DiscordBot::channels_get_callback(dpp::confirmation_callback_t value)
-    {
+    dpp::command_completion_event_t  DiscordBot::channels_get_callback(dpp::confirmation_callback_t value) {
         this->logger->debug("channels Callback");
 
-        if ( value.is_error() == true ){
+        if ( value.is_error() == true ) {
             dpp::error_info err = value.get_error();
             logger->error("Error " + err.message);
         }
@@ -162,7 +110,7 @@ namespace luxbracer {
 
         std::list default_channels = {"syslog"};
 
-        for (auto& it: channelmap) {
+        for (auto& it : channelmap) {
             id = it.first;
             channel = it.second;
 
@@ -172,7 +120,7 @@ namespace luxbracer {
             this->guild->channel_add(channel);
 
             this->logger->debug("Found channel " + channel.name + " with id " + std::to_string(id));
-            //TODO WHEN READING FROM SAVE FILE?
+            // TODO(mantz) WHEN READING FROM SAVE FILE?
             if (channel.parent_id == 0 && channel.get_type() == dpp::CHANNEL_CATEGORY) {
                 if (std::find(non_engine_categories.begin(),
                               non_engine_categories.end(),
@@ -186,7 +134,7 @@ namespace luxbracer {
         }
 
         // Added systems in first pass, now add planets
-        for (auto& it: channelmap) {
+        for (auto& it : channelmap) {
             id = it.first;
             channel = it.second;
 
@@ -195,7 +143,7 @@ namespace luxbracer {
             if (parent_id != 0) {
                 DiscordChannel * parent = this->guild->channel_get_by_id(parent_id);
 
-                if (parent == NULL){
+                if (parent == NULL) {
                     this->logger->warn("Could not fidn parent of " + channel.name);
                     continue;
                 }
@@ -221,24 +169,8 @@ namespace luxbracer {
 
             // std::function<void(const dpp::confirmation_callback_t&)> callback =
             // std::bind(&DiscordBot::channels_create_cb, this, std::placeholders::_1);
-            this->discord_iface->channel_create(chan);//, callback);
-
+            this->discord_iface->channel_create(chan);  //, callback);
         }
-
-        // if (cat == 0){
-        //     std::string n = "Sol";
-        //     this->discord_iface->log(dpp::ll_info, "create category");
-        //     luxbracer_discord_this->discord_iface->category_create(gid, cat, n);
-        // } else if (chan == 0){
-        //     std::string n = "test";
-        //     this->discord_iface->log(dpp::ll_info, "create channel, parent " + std::to_string(cat));
-        //     luxbracer_discord_this->discord_iface->channel_create(gid, cat, n);
-        // }
-
-        // dpp::message m;
-        // m.channel_id = channel_map["syslog"];
-        // m.content    = "Bot conneced, bot id " + luxbracer_discord_this->discord_iface->bot_id();
-        // this->discord_iface->message_create(m, &my_message_cb);
 
         this->init_complete = true;
 
@@ -261,10 +193,9 @@ namespace luxbracer {
     //     this->guild->channel_update(channel);
     // }
 
-    dpp::command_completion_event_t DiscordBot::user_get_guilds_callback(dpp::confirmation_callback_t value)
-    {
-        this->logger->debug( "Guilds Callback");
-        if ( value.is_error() == true ){
+    dpp::command_completion_event_t DiscordBot::user_get_guilds_callback(dpp::confirmation_callback_t value) {
+        this->logger->debug("Guilds Callback");
+        if (value.is_error() == true) {
             dpp::error_info err = value.get_error();
             this->logger->error("Error " + err.message);
         }
@@ -279,7 +210,7 @@ namespace luxbracer {
         dpp::snowflake id;
         dpp::guild g;
 
-        for (auto& it: guildmap) {
+        for (auto& it : guildmap) {
             id = it.first;
             g = it.second;
 
@@ -302,89 +233,90 @@ namespace luxbracer {
         this->guild->set_logger(logger);
     }
 
-    //void luxbracer::DiscordBot::message_cb(luxbracer::callback_msg * msg)
-    //{
-    //    dpp::message m, s;
-    //    dpp::component c;
-    //    dpp::component ar;
+    // void luxbracer::DiscordBot::message_cb(luxbracer::callback_msg * msg)
+    // {
+    //     dpp::message m, s;
+    //     dpp::component c;
+    //     dpp::component ar;
     //
-    //    std::string content = msg->content;
-    //    std::string channel = msg->channel;
+    //     std::string content = msg->content;
+    //     std::string channel = msg->channel;
     //
-    //    this->discord_iface->log(dpp::ll_debug, "received message " + std::to_string(msg->type) + " : " + content + " : " + channel);
-    //    switch(msg->type){
-    //        case CDB_MSG_DISC_MQTT_DEV_ADD:
-    //            if (device_map.find(content) == device_map.end()){
-    //                this->discord_iface->log(dpp::ll_debug, "message not found for " + content);
-    //                m.channel_id = channel_map["devices"];
-    //                m.content    = content;
+    //     this->discord_iface->log(dpp::ll_debug, "received message " +
+    //                              std::to_string(msg->type) + " : " +
+    //                              content + " : " + channel);
+    //     switch(msg->type){
+    //         case CDB_MSG_DISC_MQTT_DEV_ADD:
+    //             if (device_map.find(content) == device_map.end()){
+    //                 this->discord_iface->log(dpp::ll_debug, "message not found for " + content);
+    //                 m.channel_id = channel_map["devices"];
+    //                 m.content    = content;
     //
-    //                ar.set_type(dpp::cot_action_row);
+    //                 ar.set_type(dpp::cot_action_row);
     //
-    //                c.set_style(dpp::cos_success);
-    //                c.set_label("ON");
-    //                c.set_id(content + "#ON");
-    //                c.set_type(dpp::cot_button);
+    //                 c.set_style(dpp::cos_success);
+    //                 c.set_label("ON");
+    //                 c.set_id(content + "#ON");
+    //                 c.set_type(dpp::cot_button);
     //
-    //                ar.add_component(c);
+    //                 ar.add_component(c);
     //
-    //                c.set_style(dpp::cos_danger);
-    //                c.set_label("OFF");
-    //                c.set_id(content + "#OFF");
-    //                c.set_type(dpp::cot_button);
+    //                 c.set_style(dpp::cos_danger);
+    //                 c.set_label("OFF");
+    //                 c.set_id(content + "#OFF");
+    //                 c.set_type(dpp::cot_button);
     //
-    //                ar.add_component(c);
+    //                 ar.add_component(c);
     //
-    //                m.add_component(ar);
+    //                 m.add_component(ar);
     //
-    //                this->discord_iface->message_create(m, &my_message_cb);
-    //            } else {
-    //                this->discord_iface->log(dpp::ll_debug, "message found for " + content + ". Skipping");
-    //            }
-    //            break;
-    //        case CDB_MSG_DISC_MQTT_DEV_STATUS_ON:
-    //        case CDB_MSG_DISC_MQTT_DEV_STATUS_OFF:
-    //            if (device_map.find(content) == device_map.end()){
-    //                this->discord_iface->log(dpp::ll_warning, "status message not found for " + content);
-    //                return;
-    //            }
+    //                 this->discord_iface->message_create(m, &my_message_cb);
+    //             } else {
+    //                 this->discord_iface->log(dpp::ll_debug, "message found for " + content + ". Skipping");
+    //             }
+    //             break;
+    //         case CDB_MSG_DISC_MQTT_DEV_STATUS_ON:
+    //         case CDB_MSG_DISC_MQTT_DEV_STATUS_OFF:
+    //             if (device_map.find(content) == device_map.end()){
+    //                 this->discord_iface->log(dpp::ll_warning, "status message not found for " + content);
+    //                 return;
+    //             }
     //
-    //            m = this->discord_iface->message_get_sync(device_map[content], channel_map["devices"]);
-    //            if (msg->type == CDB_MSG_DISC_MQTT_DEV_STATUS_ON){
-    //                m.content    = content + " is ON";
-    //            } else if (msg->type == CDB_MSG_DISC_MQTT_DEV_STATUS_OFF){
-    //                m.content    = content + " is OFF";
-    //            }
+    //             m = this->discord_iface->message_get_sync(device_map[content], channel_map["devices"]);
+    //             if (msg->type == CDB_MSG_DISC_MQTT_DEV_STATUS_ON){
+    //                 m.content    = content + " is ON";
+    //             } else if (msg->type == CDB_MSG_DISC_MQTT_DEV_STATUS_OFF){
+    //                 m.content    = content + " is OFF";
+    //             }
     //
-    //            s.channel_id = channel_map["syslog"];
-    //            s.content    = m.content;
+    //             s.channel_id = channel_map["syslog"];
+    //             s.content    = m.content;
     //
-    //            this->discord_iface->message_edit(m, &my_message_cb);
-    //            this->discord_iface->message_create(s, &my_message_cb);
-    //            break;
-    //        case CDB_MSG_DISC_POST_FILE:
-    //            m.channel_id = channel_map[channel];
-    //            m.add_file(content.substr(content.find_last_of("\\/"), content.size()),
-    //                       dpp::utility::read_file(content));
+    //             this->discord_iface->message_edit(m, &my_message_cb);
+    //             this->discord_iface->message_create(s, &my_message_cb);
+    //             break;
+    //         case CDB_MSG_DISC_POST_FILE:
+    //             m.channel_id = channel_map[channel];
+    //             m.add_file(content.substr(content.find_last_of("\\/"), content.size()),
+    //                        dpp::utility::read_file(content));
     //
-    //            this->discord_iface->message_create(m, &my_message_cb);
-    //            break;
-    //        case CDB_MSG_DISC_POST_MESSAGE:
-    //            m.channel_id = channel_map[channel];
-    //            m.content    = content;
+    //             this->discord_iface->message_create(m, &my_message_cb);
+    //             break;
+    //         case CDB_MSG_DISC_POST_MESSAGE:
+    //             m.channel_id = channel_map[channel];
+    //             m.content    = content;
     //
-    //            this->discord_iface->message_create(m, &my_message_cb);
-    //            break;
-    //        default:
-    //            break;
-    //    }
-    //}
+    //             this->discord_iface->message_create(m, &my_message_cb);
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }
 
-    void DiscordBot::init(std::string token, const std::string & id)
-    {
+    void DiscordBot::init(std::string token, const std::string & id) {
         this->discord_iface = new dpp::cluster(token);
 
-        //luxbracer_discord_bot = this;
+        // luxbracer_discord_bot = this;
 
         this->bot_id = id;
 
@@ -479,18 +411,12 @@ namespace luxbracer {
         this->discord_iface->start(dpp::st_return);
     }
 
-    void DiscordBot::set_logger(Logger * l)
-    {
+    void DiscordBot::set_logger(Logger * l) {
         this->logger = l;
     }
 
-    void DiscordBot::set_engine(Engine * e)
-    {
+    void DiscordBot::set_engine(Engine * e) {
         this->engine = e;
     }
 
-    //std::string DiscordBot::bot_id_get(void)
-    //{
-    //    return this->bot_id;
-    //}
-}
+}  // namespace luxbracer
