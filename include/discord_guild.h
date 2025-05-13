@@ -1,3 +1,6 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #ifndef DISCORD_GUILD__H
 #define DISCORD_GUILD__H
 

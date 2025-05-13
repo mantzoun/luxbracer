@@ -1,11 +1,13 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #include "planet.h"
 
 namespace luxbracer {
-    Planet::Planet(const std::string& name, const std::string& system, uint64_t id) 
+    Planet::Planet(const std::string& name, const std::string& system, uint64_t id)
         : _name(name),
           _system(system),
-          _id(id)
-    {
+          _id(id) {
     }
 
     Planet::~Planet(void) {
@@ -19,7 +21,7 @@ namespace luxbracer {
         return _system;
     }
 
-    void to_json(nlohmann::json& j, const Planet & p) {
+    void to_json(nlohmann::json& j, const Planet & p) {  // NOLINT(runtime/references)
          j = nlohmann::json{
              {"name", p._name},
              {"id", p._id},
@@ -27,9 +29,9 @@ namespace luxbracer {
          };
      }
 
-      void from_json(const nlohmann::json& j, Planet & p) {
+      void from_json(const nlohmann::json& j, Planet & p) {  // NOLINT(runtime/references)
          j.at("name").get_to(p._name);
          j.at("id").get_to(p._id);
          j.at("system").get_to(p._system);
      }
-}
+}  // namespace luxbracer

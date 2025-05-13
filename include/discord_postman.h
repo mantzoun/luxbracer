@@ -1,3 +1,6 @@
+/*
+ * Copyright 2025 Stavros Mantzouneas
+ */
 #ifndef DISCORD_POSTMAN_H
 #define DISCORD_POSTMAN_H
 

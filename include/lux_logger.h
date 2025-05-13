@@ -1,4 +1,6 @@
 /*
+ * Copyright 2025 Stavros Mantzouneas
+ *
  * lux_logger.h
  *
  * Implement all logger functionality in one object, shared
