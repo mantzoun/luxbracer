@@ -35,6 +35,8 @@ namespace luxbracer {
             engineError planetRemove(const std::string & name);
             Planet * planetGet(const std::string & name);
 
+            std::vector<std::string> get_planet_names(void);
+
             void setLogger(Logger * l);
 
             friend void to_json(nlohmann::json& j, const System & s);

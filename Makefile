@@ -68,7 +68,7 @@ cpplint:
 	@cpplint --linelength=120 --filter=-build/include_subdir,-build/c++11 $(SRC) $(INC)
 
 cppcheck:
-	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR) $(EXTDIR)
+	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=unmatchedSuppression --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR) $(EXTDIR)
 
 $(TSTOBJ): $(OBJDIR)/%.o: $(TSTDIR)/%.cpp | $(OBJDIR)
 	$(CC) -o $@ $(CFLAGS) $(INCLUDES) -c $<

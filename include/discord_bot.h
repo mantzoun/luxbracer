@@ -55,6 +55,8 @@ namespace luxbracer {
             bool init_complete = false;
 
             void post(const std::string & message, const std::string & channel) override;
+            void add_system_channel(const std::string & system_name) override;
+            void add_planet_channel(const std::string & planet_name, const std::string & system_name) override;
 
             /**
              * @brief Initiaze the bot
@@ -139,7 +141,6 @@ namespace luxbracer {
             void slash_commands_handle_planet_create(const dpp::slashcommand_t & event);
             void slash_commands_handle_planet_delete(const dpp::slashcommand_t & event);
 
-            void register_guild_commands(void);
             void register_guild_command(std::vector<std::string> command);
 
 //            /**

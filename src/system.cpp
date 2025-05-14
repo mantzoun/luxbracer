@@ -45,6 +45,16 @@ namespace luxbracer {
         return ENGINE_OK;
     }
 
+    std::vector<std::string> System::get_planet_names(void) {
+        std::vector<std::string> planets;
+
+        for (auto it = this->planet_map.begin(); it != this->planet_map.end(); ++it) {
+            planets.push_back(it->first);
+        }
+
+        return planets;
+    }
+
     std::string System::name() const {
         return _name;
     }

@@ -99,6 +99,34 @@ namespace luxbracer {
                                                         channel.deleted.parent_id, channel.deleted.name));
     }
 
+    DiscordChannel * DiscordGuild::channel_get(const std::string & name, const std::string & parent) {
+        DiscordChannel * result = NULL;
+        dpp::snowflake parent_id = 0;
+
+        if (parent != "") {
+            DiscordChannel * parent_channel = this->channel_get(parent, "");
+            if (parent_channel == NULL) {
+                logger->error("Could not find parent channel");
+                return NULL;
+            }
+
+            parent_id = parent_channel->id();
+        }
+
+        for (DiscordChannel& channel : channels) {
+            if (channel.name() == name &&
+                (parent_id == 0 || channel.parent() == parent_id)) {
+                if (result == NULL) {
+                    result = &channel;
+                } else {
+                    this->logger->error("Found duplicate channel " + name);
+                }
+            }
+        }
+
+        return result;
+    }
+
     std::list<DiscordChannel *> DiscordGuild::channel_get(const std::string& name,
                                                           dpp::snowflake channel_id, dpp::snowflake parent_id) {
         std::list<DiscordChannel *> result;
@@ -117,9 +145,9 @@ namespace luxbracer {
         return result;
     }
 
-    std::list<DiscordChannel> DiscordGuild::channel_get_all(void) const {
-        return channels;
-    }
+//    std::list<DiscordChannel> DiscordGuild::channel_get_all(void) const {
+//        return channels;
+//    }
 
     DiscordChannel * DiscordGuild::channel_get_by_id(dpp::snowflake id) {
         if (id == 0) {

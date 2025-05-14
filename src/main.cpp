@@ -30,6 +30,10 @@ namespace luxbracer {
 
         engine.setLogger(&logger);
         engine.set_postman(&bot);
+#ifdef ENGINE_INIT_FROM_DISCORD
+        // prepare the engine to receive data from the bot
+        engine.init();
+#endif /* ENGINE_INIT_FROM_DISCORD */
 
         bot.set_logger(&logger);
         bot.set_engine(&engine);
@@ -41,6 +45,12 @@ namespace luxbracer {
             logger.debug("Waiting for bot init");
             usleep(5 * 1000 * 1000);
         }
+
+#ifndef ENGINE_INIT_FROM_DISCORD
+    // inialize the engine and configure the discord channels
+    engine.init();
+    engine.create_channels();
+#endif /* ENGINE_INIT_FROM_DISCORD */
 
         while (1) {
             // game_loop();
