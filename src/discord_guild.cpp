@@ -3,14 +3,6 @@
  */
 #include "discord_guild.h"
 
-static std::string  str2lower(std::string in_string) {
-    std::transform(in_string.begin(), in_string.end(), in_string.begin(), [](unsigned char c) {
-            return std::tolower(c);
-        });
-
-    return in_string;
-}
-
 namespace luxbracer {
     DiscordGuild::DiscordGuild(const dpp::snowflake id)
         : _id(id) {
@@ -132,7 +124,7 @@ namespace luxbracer {
         std::list<DiscordChannel *> result;
 
         for (DiscordChannel& channel : channels) {
-            if (str2lower(channel.name()) == str2lower(name) &&
+            if (channel.name() == name &&
                         (parent_id == 0 || channel.parent() == parent_id) &&
                         (channel_id == 0 || channel.id() == channel_id)) {
                 logger->debug("Add search result channel : " + channel.name() +
