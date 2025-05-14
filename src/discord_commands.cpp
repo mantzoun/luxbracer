@@ -141,12 +141,6 @@ namespace luxbracer {
         this->discord_iface->guild_command_create(cmd, this->guild_id);
     }
 
-    void DiscordBot::register_guild_commands() {
-        for (const auto& command : guild_commands) {
-            register_guild_command(command);
-        }
-    }
-
     void DiscordBot::slash_commands_init() {
         this->discord_iface->log(dpp::ll_debug, "Register slash commands");
 
@@ -200,15 +194,21 @@ namespace luxbracer {
 
     void DiscordBot::planet_create(const std::string& name, const std::string& system) {
         if (this->engine->planetAdd(name, system) == ENGINE_OK) {
-            DiscordChannel * parent = this->guild->channel_get(system).front();
+            DiscordChannel * parent = this->guild->channel_get(system, "");
+            if (parent == NULL) {
+                this->logger->error("Could not get sytem channel " + system);
+                return;
+            }
             this->channel_create(parent->id(), name, dpp::CHANNEL_TEXT);
         }
     }
 
     void DiscordBot::system_delete(const std::string& name) {
+        this->logger->debug("System delete");
     }
 
     void DiscordBot::planet_delete(const std::string& name) {
+        this->logger->debug("Planet delete");
     }
 
     void DiscordBot::slash_commands_handle_system_create(const dpp::slashcommand_t & event) {

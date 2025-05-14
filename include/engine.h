@@ -30,7 +30,11 @@ namespace luxbracer {
 
         public:
             Engine(void);
+            explicit Engine(Logger * l);
 
+            void init(void);
+
+            void create_channels(void);
             void set_postman(DiscordPostman * p);
 
             uint64_t next_id(void);

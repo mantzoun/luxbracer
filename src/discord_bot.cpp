@@ -23,6 +23,27 @@ namespace luxbracer {
         this->post_message(channel, message);
     }
 
+    void DiscordBot::add_system_channel(const std::string & system_name) {
+        if (this->guild->channel_get(system_name, "") == NULL) {
+            this->channel_create(0, system_name, dpp::CHANNEL_CATEGORY);
+            usleep(1 * 1000 * 1000);
+        }
+    }
+
+    void DiscordBot::add_planet_channel(const std::string & planet_name, const std::string & system_name) {
+        DiscordChannel * system_channel = this->guild->channel_get(system_name, "");
+
+        if (system_channel == NULL) {
+            this->logger->error("Missing system channel" + system_name);
+            return;
+        }
+
+        if (this->guild->channel_get(planet_name, system_name) == NULL) {
+            this->channel_create(system_channel->id(), planet_name, dpp::CHANNEL_TEXT);
+            usleep(1 * 1000 * 1000);
+        }
+    }
+
     // ===================================================================
     //                          MESSAGES
     // ===================================================================
@@ -120,7 +141,7 @@ namespace luxbracer {
             this->guild->channel_add(channel);
 
             this->logger->debug("Found channel " + channel.name + " with id " + std::to_string(id));
-            // TODO(mantz) WHEN READING FROM SAVE FILE?
+#ifdef ENGINE_INIT_FROM_DISCORD
             if (channel.parent_id == 0 && channel.get_type() == dpp::CHANNEL_CATEGORY) {
                 if (std::find(non_engine_categories.begin(),
                               non_engine_categories.end(),
@@ -131,8 +152,10 @@ namespace luxbracer {
                 this->logger->debug("Adding system " + channel.name + " to engine");
                 this->engine->systemAdd(channel.name);
             }
+#endif /* ENGINE_INIT_FROM_DISCORD */
         }
 
+#ifdef ENGINE_INIT_FROM_DISCORD
         // Added systems in first pass, now add planets
         for (auto& it : channelmap) {
             id = it.first;
@@ -151,6 +174,7 @@ namespace luxbracer {
                 this->engine->planetAdd(channel.name, parent->name());
             }
         }
+#endif /* ENGINE_INIT_FROM_DISCORD */
 
         for (std::string channel_name : default_channels) {
             std::list<DiscordChannel *> channels = this->guild->channel_get(channel_name);

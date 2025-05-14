@@ -7,8 +7,12 @@
 namespace luxbracer {
     class DiscordPostman {
         public:
-            virtual void post(const std::string & message, const std::string & channel) = 0;
             virtual ~DiscordPostman() = default;
+
+            virtual void post(const std::string & message, const std::string & channel) = 0;
+            virtual void add_system_channel(const std::string & system_name) = 0;
+            virtual void add_planet_channel(const std::string & planet_name,
+                                            const std::string & system_name) = 0;
     };
 }
 
