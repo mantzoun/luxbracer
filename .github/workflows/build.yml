@@ -36,19 +36,25 @@ jobs:
         run: |
           make cppcheck
 
-  test-and-coverage:
+  tests-and-coverage:
     runs-on: test
     needs: build
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run unit tests
+      - name: Run tests
         run: |
           make -j4 test_ci
-
-      - name: Collect coverage
-        run: |
+          ut_res=$?
           make coverage
+          cov_res=$?
+          make serialization_check
+          ser_res=$?
+          if [[ $ut_res == 0 && $cov_res == 0 && $ser_res == 0 ]]
+          then
+            exit 0
+          fi
+          exit 1
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

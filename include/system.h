@@ -18,18 +18,18 @@
 namespace luxbracer {
     class System {
         private:
-            Logger * logger = NULL;
-            std:: string    _name;
-            uint64_t        _id;
+            Logger * logger = NULL; // no_serial
+            std::string    name;
+            uint64_t        id;
 
             std::map<std::string, Planet> planet_map;
         public:
             System(void) = default;
             System(const std::string& name, uint64_t id);
 
-            std::string name(void) const;
+            std::string getName(void) const;
 
-            uint64_t id(void) const;
+            uint64_t getId(void) const;
 
             engineError planetAdd(Planet planet);
             engineError planetRemove(const std::string & name);
@@ -42,6 +42,22 @@ namespace luxbracer {
             friend void to_json(nlohmann::json& j, const System & s);
             friend void from_json(const nlohmann::json& j, System & s);
     };
+
+    inline
+    void to_json(nlohmann::json& j, const System & s) {  // NOLINT(runtime/references)
+        j = nlohmann::json{
+            {"name", s.name},
+            {"id", s.id},
+            {"planet_map", s.planet_map}
+        };
+    }
+
+    inline
+    void from_json(const nlohmann::json& j, System & s) {  // NOLINT(runtime/references)
+        j.at("name").get_to(s.name);
+        j.at("id").get_to(s.id);
+        j.at("planet_map").get_to(s.planet_map);
+    }
 }
 
 #endif /* SYSTEM__H */

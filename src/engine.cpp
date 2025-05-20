@@ -2,6 +2,7 @@
  * Copyright 2025 Stavros Mantzouneas
  */
 #include <stdexcept>
+#include "lux_utils.h"
 #include "engine.h"
 
 namespace luxbracer {
@@ -22,7 +23,7 @@ namespace luxbracer {
     void Engine::init() {
         // try to read initial conditions
         try {
-            nlohmann::json json = this->load("initial.json");
+            nlohmann::json json = load_file("initial.json");
             from_json(json, *this);
         } catch (const std::runtime_error & e) {
             this->logger->warn("Could not read initial conditions");
@@ -57,13 +58,13 @@ namespace luxbracer {
 //    }
 
     engineError Engine::systemAdd(System & system) {
-        if ( system_map.count(system.name()) != 0 ) {
-            logger->warn("System " + system.name() + " exists");
+        if ( system_map.count(system.getName()) != 0 ) {
+            logger->warn("System " + system.getName() + " exists");
             return ENGINE_ITEM_EXISTS;
         }
 
-        logger->debug("System " + system.name() + "(" + std::to_string(system.id()) + ") added");
-        system_map.insert({system.name(), system});
+        logger->debug("System " + system.getName() + "(" + std::to_string(system.getId()) + ") added");
+        system_map.insert({system.getName(), system});
         return ENGINE_OK;
     }
 
@@ -130,36 +131,6 @@ namespace luxbracer {
 
         nlohmann::json json;
         to_json(json, *this);
-        this->save("engine_save_" + std::to_string(this->date) + ".json", json);
-    }
-
-    void to_json(nlohmann::json& j, const Engine & e) {  // NOLINT(runtime/references)
-        j = nlohmann::json{
-            {"index", e.index},
-            {"system_map", e.system_map}
-        };
-    }
-
-    void from_json(const nlohmann::json& j, Engine & e) {  // NOLINT(runtime/references)
-        j.at("index").get_to(e.index);
-        j.at("system_map").get_to(e.system_map);
-    }
-
-    void Engine::save(const std::string & filename, const nlohmann::json & j) {
-        std::ofstream file(filename);
-        if (!file) {
-            throw std::runtime_error("Failed to open file for writing: " + filename);
-        }
-        file << j.dump(4);
-    }
-
-    nlohmann::json Engine::load(const std::string & filename) {
-        std::ifstream file(filename);
-        if (!file) {
-            throw std::runtime_error("Failed to open file for reading: " + filename);
-        }
-        nlohmann::json j;
-        file >> j;
-        return j;
+        save_file("engine_save_" + std::to_string(this->date) + ".json", json);
     }
 }  // namespace luxbracer

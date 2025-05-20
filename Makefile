@@ -23,7 +23,7 @@ LIB = -ldpp \
       -lgcov \
 #      -pthread \
 
-FILES = main.cpp discord_bot.cpp discord_channel.cpp discord_guild.cpp discord_commands.cpp lux_logger.cpp planet.cpp system.cpp engine.cpp
+FILES = main.cpp discord_bot.cpp discord_channel.cpp discord_guild.cpp discord_commands.cpp lux_logger.cpp planet.cpp system.cpp engine.cpp events.cpp
 
 TEST_FILES = test_main.cpp test_guild.cpp test_engine.cpp
 
@@ -65,7 +65,7 @@ dox:  | $(DOCDIR)
 	$(DOX) $(DOXYFILE)
 
 cpplint:
-	@cpplint --linelength=120 --filter=-build/include_subdir,-build/c++11 $(SRC) $(INC)
+	@cpplint --linelength=120 --filter=-build/include_subdir,-build/c++11 $(SRC) $(INCDIR)/*
 
 cppcheck:
 	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=unmatchedSuppression --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR) $(EXTDIR)
@@ -88,6 +88,8 @@ coverage: test
 	lcov --remove coverage.info '/usr/*' '*/test/test_*' '*/ext/*' --output-file coverage_clean.info
 	genhtml coverage_clean.info --output-directory $(COVERAGEDIR)
 
-
 runner:
 	@docker build -t github:latest -f cicd/github-runner.Dockerfile .
+
+serialization_check:
+	@./serial_check.sh $(INCDIR)/*

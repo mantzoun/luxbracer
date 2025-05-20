@@ -5,7 +5,6 @@
 #define ENGINE__H
 
 #include <map>
-#include <fstream>
 
 #include "lux_types.h"
 #include "discord_postman.h"
@@ -20,8 +19,8 @@ namespace luxbracer {
 
             std::map<std::string, System> system_map;
 
-            Logger * logger = NULL;
-            DiscordPostman * postman = NULL;
+            Logger * logger = NULL;             // no_serial
+            DiscordPostman * postman = NULL;    // no_serial
 
             void execute_player_actions();
             void date_advance();
@@ -50,14 +49,27 @@ namespace luxbracer {
             Planet * planetGet(const std::string & name, const std::string & system);
             engineError planetRemove(const std::string & name, const std::string & system);
 
-            static void save(const std::string & filename, const nlohmann::json & j);
-            static nlohmann::json load(const std::string & filename);
-
             friend void to_json(nlohmann::json& j, const Engine& e);
             friend void from_json(const nlohmann::json& j, Engine& e);
 
             void execute_game_loop(void);
     };
+
+    inline
+    void to_json(nlohmann::json& j, const Engine & e) {  // NOLINT(runtime/references)
+        j = nlohmann::json{
+            {"index", e.index},
+            {"system_map", e.system_map},
+            {"date", e.date},
+        };
+    }
+
+    inline
+    void from_json(const nlohmann::json& j, Engine & e) {  // NOLINT(runtime/references)
+        j.at("index").get_to(e.index);
+        j.at("system_map").get_to(e.system_map);
+        j.at("date").get_to(e.date);
+    }
 }
 
 #endif /* ENGINE__H */
