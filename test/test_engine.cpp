@@ -92,13 +92,13 @@ namespace luxbracer {
 
         REQUIRE(engine.planetAdd("Planet1", "System1") == ENGINE_OK);
         Planet * p  = engine.planetGet("Planet1", "System1");
-        REQUIRE(p->name() == "Planet1");
-        REQUIRE(p->system() == "System1");
+        REQUIRE(p->getName() == "Planet1");
+        REQUIRE(p->getSystem() == "System1");
 
         REQUIRE(engine.planetAdd("Planet2", "System1") == ENGINE_OK);
         p = engine.planetGet("Planet2", "System1");
-        REQUIRE(p->name() == "Planet2");
-        REQUIRE(p->system() == "System1");
+        REQUIRE(p->getName() == "Planet2");
+        REQUIRE(p->getSystem() == "System1");
 
         REQUIRE(engine.planetRemove("Planet1", "System2") == ENGINE_ERROR);
 
@@ -136,11 +136,11 @@ namespace luxbracer {
 
         nlohmann::json j;
         to_json(j, engine);
-        engine.save("savefile.json", engine);
+        save_file("savefile.json", engine);
 
         Engine new_engine;
 
-        from_json(new_engine.load("savefile.json"), new_engine);
+        from_json(load_file("savefile.json"), new_engine);
 
         System * s1 = new_engine.systemGet("System1");
         System * s2 = new_engine.systemGet("System2");
@@ -153,26 +153,26 @@ namespace luxbracer {
         Planet * p32 = new_engine.planetGet("Planet3", "System3");
 
         REQUIRE(s1 != NULL);
-        REQUIRE(s1->name() == "System1");
+        REQUIRE(s1->getName() == "System1");
 
         REQUIRE(s2 != NULL);
-        REQUIRE(s2->name() == "System2");
+        REQUIRE(s2->getName() == "System2");
 
         REQUIRE(s3 == NULL);
 
         REQUIRE(p1 != NULL);
-        REQUIRE(p1->name() == "Planet1");
-        REQUIRE(p1->system() == "System1");
+        REQUIRE(p1->getName() == "Planet1");
+        REQUIRE(p1->getSystem() == "System1");
 
         REQUIRE(p2 != NULL);
-        REQUIRE(p2->name() == "Planet2");
-        REQUIRE(p2->system() == "System1");
+        REQUIRE(p2->getName() == "Planet2");
+        REQUIRE(p2->getSystem() == "System1");
 
         REQUIRE(p30 == NULL);
 
         REQUIRE(p31 != NULL);
-        REQUIRE(p31->name() == "Planet3");
-        REQUIRE(p31->system() == "System2");
+        REQUIRE(p31->getName() == "Planet3");
+        REQUIRE(p31->getSystem() == "System2");
 
         REQUIRE(p32 == NULL);
     }

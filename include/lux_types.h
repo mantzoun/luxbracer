@@ -7,10 +7,13 @@
 #include "json.hpp"
 #include "dpp/dpp.h"
 
-typedef std::string str;
-typedef dpp::snowflake disc_id;
+#include "planet_event.h"
+#include "system_event.h"
 
 namespace luxbracer {
+    typedef std::list<PlanetEvent> PlanetEvents;
+    typedef std::list<SystemEvent> SystemEvents;
+
     enum engineError {
         ENGINE_OK,
         ENGINE_ERROR,

@@ -7,19 +7,19 @@
 
 namespace luxbracer {
     System::System(const std::string& name, uint64_t id) :
-        _name(name),
-        _id(id) {
+        name(name),
+        id(id) {
     }
 
     engineError System::planetAdd(Planet planet) {
-        Planet * p = planetGet(planet.name());
+        Planet * p = planetGet(planet.getName());
 
         if (p != NULL) {
-            logger->warn("Planet " + planet.name() + " exists");
+            logger->warn("Planet " + planet.getName() + " exists");
             return ENGINE_ITEM_EXISTS;
         }
 
-        planet_map.insert({planet.name(), planet});
+        planet_map.insert({planet.getName(), planet});
         return ENGINE_OK;
     }
 
@@ -55,29 +55,16 @@ namespace luxbracer {
         return planets;
     }
 
-    std::string System::name() const {
-        return _name;
+    std::string System::getName() const {
+        return this->name;
     }
 
-    uint64_t System::id() const {
-        return this->_id;
+    uint64_t System::getId() const {
+        return this->id;
     }
 
     void System::setLogger(Logger * l) {
         logger = l;
     }
 
-    void to_json(nlohmann::json& j, const System & s) {  // NOLINT(runtime/references)
-        j = nlohmann::json{
-            {"name", s._name},
-            {"id", s._id},
-            {"planet_map", s.planet_map}
-        };
-    }
-
-    void from_json(const nlohmann::json& j, System & s) {  // NOLINT(runtime/references)
-        j.at("name").get_to(s._name);
-        j.at("id").get_to(s._id);
-        j.at("planet_map").get_to(s.planet_map);
-    }
 }  // namespace luxbracer

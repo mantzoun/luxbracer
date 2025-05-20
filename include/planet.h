@@ -17,34 +17,46 @@ namespace luxbracer {
 
     class Planet {
         private:
-            std::string     _name;
-            std::string     _system;
-            uint64_t        _id;
+            std::string     name;
+            std::string     system;
+            uint64_t        id;
 
             planetGovernment government;
             int prosperity;
- //           List<stateEntity> _states
- //           List<accessPoint> _accessPoints
- //           planetType _type;
-//            planetSize _size;
-//            planetGravity _gravity;
-//            planetTemp _temperature;
-//            planetAtmoPress _atmospherePressure;
-//            bool _atmoBreathable;
-//            biosphereType _biosphere;
+
         public:
             Planet(void) = default;
             Planet(const std::string& name, const std::string& system, uint64_t id);
 
             ~Planet(void);
-            std::string name(void) const;
-            std::string system(void) const;
+            std::string getName(void) const;
+            std::string getSystem(void) const;
 
             void randomize(void);
 
             friend void to_json(nlohmann::json& j, const Planet & p);
             friend void from_json(const nlohmann::json& j, Planet & p);
     };
+
+    inline
+    void to_json(nlohmann::json& j, const Planet & p) {  // NOLINT(runtime/references)
+        j = nlohmann::json{
+            {"name", p.name},
+            {"id", p.id},
+            {"system", p.system},
+            {"government", p.government},
+            {"prosperity", p.prosperity},
+        };
+    }
+
+    inline
+    void from_json(const nlohmann::json& j, Planet & p) {  // NOLINT(runtime/references)
+        j.at("name").get_to(p.name);
+        j.at("id").get_to(p.id);
+        j.at("system").get_to(p.system);
+        j.at("government").get_to(p.government);
+        j.at("prosperity").get_to(p.prosperity);
+    }
 }
 
 #endif /* PLANET__H */
