@@ -1,0 +1,31 @@
+trigger:
+  branches:
+    include:
+      - '*'
+
+jobs:
+- job: build_and_test
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+    - checkout: self
+
+    - script: |
+        sudo apt update
+        sudo apt install -y build-essential gcc g++ make git vim cmake wget file jq curl cpplint cppcheck libopus-dev lcov
+        sudo rm -rf /var/lib/apt/lists/*
+        export DPP_VER=10.1.2
+        export DPP_URL=https://github.com/brainboxdotcc/DPP/releases/download/v${DPP_VER}/libdpp-${DPP_VER}-linux-x64.deb
+        cd /tmp
+        wget -O dpp.deb ${DPP_URL}
+        sudo apt install -y ./dpp.deb
+      displayName: 'Install dependencies'
+
+    - script: make -j4 all
+      displayName: 'Build'
+
+    - script: make cpplint
+      displayName: 'Run cpplint'
+
+    - script: make cppcheck
+      displayName: 'Static Code Analysis'
