@@ -4,7 +4,7 @@ trigger:
       - '*'
 
 jobs:
-- job: Full-Pipeline
+- job: build_and_test
   pool:
     vmImage: 'ubuntu-latest'
   steps:
