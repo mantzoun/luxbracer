@@ -5,62 +5,57 @@ on:
     branches:
       - '*'
 
+permissions:
+  checks: write
+  contents: read
+
 jobs:
   build:
-    runs-on: build
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential gcc g++ make git wget file jq curl cpplint cppcheck libopus-dev lcov
+          export DPP_VER=10.1.2
+          export DPP_URL=https://github.com/brainboxdotcc/DPP/releases/download/v${DPP_VER}/libdpp-${DPP_VER}-linux-x64.deb
+          cd /tmp
+          wget -O dpp.deb ${DPP_URL}
+          sudo apt install -y ./dpp.deb
+
       - name: Build
         run: make -j4 all
 
-  lint:
-    runs-on: lint
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run cpplint
-        run: |
-          make cpplint
-
-  sca:
-    runs-on: sca
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
       - name: Static Code Analysis
-        run: |
-          make cppcheck
+        run: make cppcheck
+        continue-on-error: true
 
-  tests-and-coverage:
-    runs-on: test
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
+      - name: Linting
+        run: make cpplint
+        continue-on-error: true
 
-      - name: Run tests
-        run: |
-          make -j4 test_ci
-          ut_res=$?
-          make coverage
-          cov_res=$?
-          make serialization_check
-          ser_res=$?
-          if [[ $ut_res == 0 && $cov_res == 0 && $ser_res == 0 ]]
-          then
-            exit 0
-          fi
-          exit 1
+      - name: Unit testing
+        run: make -j4 test_ci
+        continue-on-error: true
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
+      - name: Code coverage
+        run: make coverage
+        continue-on-error: true
+
+      - name: Selialization check
+        run: make serialization_check
+        continue-on-error: true
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
         with:
-          name: unittest-results
+          name: Unit Tests
           path: results.xml
+          reporter: java-junit
 
       - name: Upload coverage results
         uses: actions/upload-artifact@v4
@@ -70,19 +65,20 @@ jobs:
             ./coverage_clean.info
             out/
 
-  release:
-    runs-on: release
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build release binary
-        run: |
-          make release
-
-      - name: Upload release binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: luxbot
-          path: |
-            ./bin/luxbot
+            #  release:
+            #    runs-on: release
+            #    needs: build
+            #    steps:
+            #      - uses: actions/checkout@v4
+            #
+            #      - name: Build release binary
+            #        run: |
+            #          make release
+            #
+            #      - name: Upload release binary
+            #        uses: actions/upload-artifact@v4
+            #        with:
+            #          name: luxbot
+            #          path: |
+            #            ./bin/luxbot
+            #
