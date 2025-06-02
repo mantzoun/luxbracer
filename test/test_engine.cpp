@@ -72,8 +72,8 @@ namespace luxbracer {
         s.setLogger(&logger);
         REQUIRE(engine.systemAdd(s) == ENGINE_OK);
 
-        REQUIRE(engine.planetAdd("Planet1", "System1") == ENGINE_OK);
-        REQUIRE(engine.planetAdd("Planet2", "System1") == ENGINE_OK);
+        REQUIRE(engine.planetAdd("planet1", "System1") == ENGINE_OK);
+        REQUIRE(engine.planetAdd("planet2", "System1") == ENGINE_OK);
     }
 
     TEST_CASE_METHOD(EngineTestcase, "CheckAddPlanetDuplicate", "ENGINE_GROUP") {
@@ -81,8 +81,8 @@ namespace luxbracer {
         s.setLogger(&logger);
         REQUIRE(engine.systemAdd(s) == ENGINE_OK);
 
-        REQUIRE(engine.planetAdd("Planet1", "System1") == ENGINE_OK);
-        REQUIRE(engine.planetAdd("Planet1", "System1") == ENGINE_ITEM_EXISTS);
+        REQUIRE(engine.planetAdd("planet1", "System1") == ENGINE_OK);
+        REQUIRE(engine.planetAdd("planet1", "System1") == ENGINE_ITEM_EXISTS);
     }
 
     TEST_CASE_METHOD(EngineTestcase, "CheckRemovePlanetOK", "ENGINE_GROUP") {
@@ -90,26 +90,26 @@ namespace luxbracer {
         s.setLogger(&logger);
         REQUIRE(engine.systemAdd(s) == ENGINE_OK);
 
-        REQUIRE(engine.planetAdd("Planet1", "System1") == ENGINE_OK);
-        Planet * p  = engine.planetGet("Planet1", "System1");
-        REQUIRE(p->getName() == "Planet1");
+        REQUIRE(engine.planetAdd("planet1", "System1") == ENGINE_OK);
+        Planet * p  = engine.planetGet("planet1", "System1");
+        REQUIRE(p->getName() == "planet1");
         REQUIRE(p->getSystem() == "System1");
 
-        REQUIRE(engine.planetAdd("Planet2", "System1") == ENGINE_OK);
-        p = engine.planetGet("Planet2", "System1");
-        REQUIRE(p->getName() == "Planet2");
+        REQUIRE(engine.planetAdd("planet2", "System1") == ENGINE_OK);
+        p = engine.planetGet("planet2", "System1");
+        REQUIRE(p->getName() == "planet2");
         REQUIRE(p->getSystem() == "System1");
 
-        REQUIRE(engine.planetRemove("Planet1", "System2") == ENGINE_ERROR);
+        REQUIRE(engine.planetRemove("planet1", "System2") == ENGINE_ERROR);
 
-        REQUIRE(engine.planetRemove("Planet2", "System1") == ENGINE_OK);
-        REQUIRE(engine.planetRemove("Planet1", "System1") == ENGINE_OK);
+        REQUIRE(engine.planetRemove("planet2", "System1") == ENGINE_OK);
+        REQUIRE(engine.planetRemove("planet1", "System1") == ENGINE_OK);
 
-        REQUIRE(engine.planetRemove("Planet1", "System1") == ENGINE_ERROR);
-        REQUIRE(engine.planetGet("Planet1", "System1") == NULL);
+        REQUIRE(engine.planetRemove("planet1", "System1") == ENGINE_ERROR);
+        REQUIRE(engine.planetGet("planet1", "System1") == NULL);
 
-        REQUIRE(engine.planetRemove("Planet2", "System1") == ENGINE_ERROR);
-        REQUIRE(engine.planetGet("Planet2", "System1") == NULL);
+        REQUIRE(engine.planetRemove("planet2", "System1") == ENGINE_ERROR);
+        REQUIRE(engine.planetGet("planet2", "System1") == NULL);
     }
 
     TEST_CASE_METHOD(EngineTestcase, "CheckAddPlanetWrongSystem", "ENGINE_GROUP") {
@@ -117,8 +117,8 @@ namespace luxbracer {
         s.setLogger(&logger);
         REQUIRE(engine.systemAdd(s) == ENGINE_OK);
 
-        REQUIRE(engine.planetAdd("Planet1", "System2") == ENGINE_ERROR);
-        REQUIRE(engine.planetAdd("Planet1", "System1") == ENGINE_OK);
+        REQUIRE(engine.planetAdd("planet1", "System2") == ENGINE_ERROR);
+        REQUIRE(engine.planetAdd("planet1", "System1") == ENGINE_OK);
     }
 
     TEST_CASE_METHOD(EngineTestcase, "CheckEngineSaveLoad", "ENGINE_GROUP") {
@@ -130,9 +130,9 @@ namespace luxbracer {
         s.setLogger(&logger);
         REQUIRE(engine.systemAdd(s) == ENGINE_OK);
 
-        REQUIRE(engine.planetAdd("Planet1", "System1") == ENGINE_OK);
-        REQUIRE(engine.planetAdd("Planet2", "System1") == ENGINE_OK);
-        REQUIRE(engine.planetAdd("Planet3", "System2") == ENGINE_OK);
+        REQUIRE(engine.planetAdd("planet1", "System1") == ENGINE_OK);
+        REQUIRE(engine.planetAdd("planet2", "System1") == ENGINE_OK);
+        REQUIRE(engine.planetAdd("planet3", "System2") == ENGINE_OK);
 
         nlohmann::json j;
         to_json(j, engine);
@@ -146,11 +146,11 @@ namespace luxbracer {
         System * s2 = new_engine.systemGet("System2");
         System * s3 = new_engine.systemGet("System3");
 
-        Planet * p1  = new_engine.planetGet("Planet1", "System1");
-        Planet * p2  = new_engine.planetGet("Planet2", "System1");
-        Planet * p30 = new_engine.planetGet("Planet3", "System1");
-        Planet * p31 = new_engine.planetGet("Planet3", "System2");
-        Planet * p32 = new_engine.planetGet("Planet3", "System3");
+        Planet * p1  = new_engine.planetGet("planet1", "System1");
+        Planet * p2  = new_engine.planetGet("planet2", "System1");
+        Planet * p30 = new_engine.planetGet("planet3", "System1");
+        Planet * p31 = new_engine.planetGet("planet3", "System2");
+        Planet * p32 = new_engine.planetGet("planet3", "System3");
 
         REQUIRE(s1 != NULL);
         REQUIRE(s1->getName() == "System1");
@@ -161,17 +161,17 @@ namespace luxbracer {
         REQUIRE(s3 == NULL);
 
         REQUIRE(p1 != NULL);
-        REQUIRE(p1->getName() == "Planet1");
+        REQUIRE(p1->getName() == "planet1");
         REQUIRE(p1->getSystem() == "System1");
 
         REQUIRE(p2 != NULL);
-        REQUIRE(p2->getName() == "Planet2");
+        REQUIRE(p2->getName() == "planet2");
         REQUIRE(p2->getSystem() == "System1");
 
         REQUIRE(p30 == NULL);
 
         REQUIRE(p31 != NULL);
-        REQUIRE(p31->getName() == "Planet3");
+        REQUIRE(p31->getName() == "planet3");
         REQUIRE(p31->getSystem() == "System2");
 
         REQUIRE(p32 == NULL);

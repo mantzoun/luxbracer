@@ -10,11 +10,18 @@
 #include <map>
 #include <cstring>
 
+#include "json.hpp"
+#include "lux_utils.h"
 #include "discord_postman.h"
 #include "discord_bot.h"
 #include "engine.h"
 
 namespace luxbracer {
+    typedef struct {
+        std::string bot_token;
+    } lux_conf_t;
+
+    static lux_conf_t config;
     static DiscordBot bot;
     Engine engine;
 
@@ -25,8 +32,13 @@ namespace luxbracer {
     //     bot.post_message("syslog", "here");
     // }
 
+    void from_json(const nlohmann::json& j, lux_conf_t & c) {  // NOLINT(runtime/references)
+        j.at("bot_token").get_to(c.bot_token);
+    }
+
     int main(int argc, char** argv) {
         logger.info("Starting Discord Bot\n");
+        from_json(load_file("config.json"), config);
 
         engine.setLogger(&logger);
         engine.set_postman(&bot);
@@ -37,9 +49,8 @@ namespace luxbracer {
 
         bot.set_logger(&logger);
         bot.set_engine(&engine);
-        std::string token = "";
         std::string id = "myid";
-        bot.init(token, id);
+        bot.init(config.bot_token, id);
 
         while (!bot.init_complete) {
             logger.debug("Waiting for bot init");
