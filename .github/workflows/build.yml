@@ -12,43 +12,57 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: ghcr.io/mantzoun/luxbracer-runner:latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential gcc g++ make git wget file jq curl cpplint cppcheck libopus-dev lcov
-          export DPP_VER=10.1.2
-          export DPP_URL=https://github.com/brainboxdotcc/DPP/releases/download/v${DPP_VER}/libdpp-${DPP_VER}-linux-x64.deb
-          cd /tmp
-          wget -O dpp.deb ${DPP_URL}
-          sudo apt install -y ./dpp.deb
-
       - name: Build
         run: make -j4 all
 
-      - name: Static Code Analysis
-        run: make cppcheck
-        continue-on-error: true
+  code-check:
+    runs-on: ubuntu-latest
+    container: ghcr.io/mantzoun/luxbracer-runner:latest
 
-      - name: Linting
-        run: make cpplint
-        continue-on-error: true
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint
+        run: make cpplint || echo "TEST_FAILED=true" >> $GITHUB_ENV
+
+      - name: Static Code Analysis
+        run: make cppcheck || echo "TEST_FAILED=true" >> $GITHUB_ENV
+
+      - name: Serialization check
+        run: make serialization_check || echo "TEST_FAILED=true" >> $GITHUB_ENV
+
+      - name: Fail if checks Failed
+        if: env.TEST_FAILED == 'true'
+        run: |
+          echo "Code check failed"
+          exit 1
+
+  tests-and-coverage:
+    runs-on: ubuntu-latest
+    container: ghcr.io/mantzoun/luxbracer-runner:latest
+
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Unit testing
-        run: make -j4 test_ci
-        continue-on-error: true
+        run: make -j4 test_ci || echo "TEST_FAILED=true" >> $GITHUB_ENV
 
       - name: Code coverage
         run: make coverage
-        continue-on-error: true
 
-      - name: Selialization check
-        run: make serialization_check
-        continue-on-error: true
+      # dorny fails otherwise
+      - name: Mark repo as safe for git
+        run: git config --global --add safe.directory "$(pwd)"
 
       - name: Publish test results
         uses: dorny/test-reporter@v1
@@ -64,6 +78,12 @@ jobs:
           path: |
             ./coverage_clean.info
             out/
+
+      - name: Fail if tests failed
+        if: env.TEST_FAILED == 'true'
+        run: |
+          echo "Unit tests failed!"
+          exit 1
 
             #  release:
             #    runs-on: release
