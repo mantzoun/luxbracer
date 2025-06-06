@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <mutex>
 
-#include "lux_logger.h"
+#include "include/lux_logger.h"
 
 static std::mutex mutex;
 
@@ -39,10 +39,11 @@ namespace luxbracer {
             tm ltm;
             localtime_r(&now, &ltm);
             char res[40];
-            snprintf(res, sizeof(res), "%04d-%02d-%02d %02d:%02d:%02d %s", 1900 + ltm.tm_year,
-                                                                1 + ltm.tm_mon, ltm.tm_mday,
-                                                                ltm.tm_hour, ltm.tm_min, ltm.tm_sec,
-                                                                lux_log_lvl_str[lvl].c_str());
+            snprintf(res, sizeof(res), "%04d-%02d-%02d %02d:%02d:%02d %s",
+                                          1900 + ltm.tm_year,
+                                          1 + ltm.tm_mon, ltm.tm_mday,
+                                          ltm.tm_hour, ltm.tm_min, ltm.tm_sec,
+                                          lux_log_lvl_str[lvl].c_str());
             std::string tstamp = res;
             std::cout << tstamp + " " + msg + "\n";
             std::cout.flush();

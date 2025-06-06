@@ -1,4 +1,0 @@
-#ifndef DISCORD_CHANNELS__H
-#define DISCORD_CHANNELS__H
-
-#endif /* DISCORD_CHANNELS */

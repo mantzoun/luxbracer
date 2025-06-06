@@ -16,8 +16,7 @@ DOXYFILE = Doxyfile
 CC = g++
 CFLAGS = -Wall -g -std=c++20 -Wno-psabi -O0 -fprofile-arcs -ftest-coverage
 RELEASE_CFLAGS = -Wall -std=c++20 -Wno-psabi -O3
-INCLUDES = -I$(INCDIR) \
-           -I$(EXTDIR) \
+INCLUDES = -I.
 
 LIB = -ldpp \
       -lgcov \
@@ -64,7 +63,7 @@ dox:  | $(DOCDIR)
 	$(DOX) $(DOXYFILE)
 
 cpplint:
-	@cpplint --linelength=120 --filter=-build/include_subdir,-build/c++11 $(SRC) $(INCDIR)/*
+	@cpplint --linelength=120 --filter=-build/c++11 $(SRC) $(INCDIR)/*
 
 cppcheck:
 	@cppcheck $(SRC) --force --enable=all --inconclusive --error-exitcode=1 --suppress=unmatchedSuppression --suppress=missingIncludeSystem --suppress=missingInclude -I$(INCDIR) $(EXTDIR)
