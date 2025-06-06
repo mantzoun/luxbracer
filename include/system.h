@@ -1,63 +1,67 @@
 /*
  * Copyright 2025 Stavros Mantzouneas
  */
-#ifndef SYSTEM__H
-#define SYSTEM__H
+#ifndef INCLUDE_SYSTEM_H_
+#define INCLUDE_SYSTEM_H_
 
 #include <cstdint>
 #include <string>
 #include <map>
+#include <vector>
 
-#include "json.hpp"
-//#include "stateEntity,h"
-//#include "accessPoint"
-#include "lux_types.h"
-#include "planet.h"
-#include "lux_logger.h"
+#include "ext/json.hpp"
+#include "include/lux_types.h"
+#include "include/planet.h"
+#include "include/lux_logger.h"
 
 namespace luxbracer {
-    class System {
-        private:
-            Logger * logger = NULL; // no_serial
-            std::string    name;
-            uint64_t        id;
+class System {
+ private:
+  Logger * logger = NULL;  // no_serial
+  std::string    name;
+  uint64_t        id;
 
-            std::map<std::string, Planet> planet_map;
-        public:
-            System(void) = default;
-            System(const std::string& name, uint64_t id);
+  std::map<std::string, Planet> planet_map;
 
-            std::string getName(void) const;
+ public:
+  System(void) = default;
+  System(const std::string& name, uint64_t id);
 
-            uint64_t getId(void) const;
+  std::string getName(void) const;
 
-            engineError planetAdd(Planet planet);
-            engineError planetRemove(const std::string & name);
-            Planet * planetGet(const std::string & name);
+  uint64_t getId(void) const;
 
-            std::vector<std::string> get_planet_names(void);
+  engineError planetAdd(Planet planet);
+  engineError planetRemove(const std::string & name);
+  Planet * planetGet(const std::string & name);
 
-            void setLogger(Logger * l);
+  std::vector<std::string> get_planet_names(void);
 
-            friend void to_json(nlohmann::json& j, const System & s);
-            friend void from_json(const nlohmann::json& j, System & s);
-    };
+  void setLogger(Logger * l);
 
-    inline
-    void to_json(nlohmann::json& j, const System & s) {  // NOLINT(runtime/references)
-        j = nlohmann::json{
-            {"name", s.name},
-            {"id", s.id},
-            {"planet_map", s.planet_map}
-        };
-    }
+  friend void to_json(nlohmann::json& j, \
+                      const System & s);  // NOLINT(runtime/references)
+  friend void from_json(const nlohmann::json& j, \
+                        System & s);  // NOLINT(runtime/references)
+};
 
-    inline
-    void from_json(const nlohmann::json& j, System & s) {  // NOLINT(runtime/references)
-        j.at("name").get_to(s.name);
-        j.at("id").get_to(s.id);
-        j.at("planet_map").get_to(s.planet_map);
-    }
+inline
+void to_json(nlohmann::json& j, \
+             const System & s) {  // NOLINT(runtime/references)
+  j = nlohmann::json{
+      {"name", s.name},
+      {"id", s.id},
+      {"planet_map", s.planet_map}
+  };
 }
 
-#endif /* SYSTEM__H */
+inline
+void from_json(const nlohmann::json& j,
+                System & s) {  // NOLINT(runtime/references)
+  j.at("name").get_to(s.name);
+  j.at("id").get_to(s.id);
+  j.at("planet_map").get_to(s.planet_map);
+}
+}  // namespace luxbracer
+
+#endif  // INCLUDE_SYSTEM_H_

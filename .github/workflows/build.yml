@@ -5,9 +5,14 @@ on:
     branches:
       - '*'
 
+permissions:
+  checks: write
+  contents: read
+
 jobs:
   build:
-    runs-on: build
+    runs-on: ubuntu-latest
+    container: ghcr.io/mantzoun/luxbracer-runner:latest
 
     steps:
       - name: Checkout code
@@ -16,51 +21,55 @@ jobs:
       - name: Build
         run: make -j4 all
 
-  lint:
-    runs-on: lint
+  code-check:
+    runs-on: ubuntu-latest
+    container: ghcr.io/mantzoun/luxbracer-runner:latest
+
     needs: build
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Run cpplint
-        run: |
-          make cpplint
-
-  sca:
-    runs-on: sca
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
+      - name: Lint
+        run: make cpplint || echo "TEST_FAILED=true" >> $GITHUB_ENV
 
       - name: Static Code Analysis
-        run: |
-          make cppcheck
+        run: make cppcheck || echo "TEST_FAILED=true" >> $GITHUB_ENV
 
-  tests-and-coverage:
-    runs-on: test
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
+      - name: Serialization check
+        run: make serialization_check || echo "TEST_FAILED=true" >> $GITHUB_ENV
 
-      - name: Run tests
+      - name: Fail if checks Failed
+        if: env.TEST_FAILED == 'true'
         run: |
-          make -j4 test_ci
-          ut_res=$?
-          make coverage
-          cov_res=$?
-          make serialization_check
-          ser_res=$?
-          if [[ $ut_res == 0 && $cov_res == 0 && $ser_res == 0 ]]
-          then
-            exit 0
-          fi
+          echo "Code check failed"
           exit 1
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
+  tests-and-coverage:
+    runs-on: ubuntu-latest
+    container: ghcr.io/mantzoun/luxbracer-runner:latest
+
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Unit testing
+        run: make -j4 test_ci || echo "TEST_FAILED=true" >> $GITHUB_ENV
+
+      - name: Code coverage
+        run: make coverage
+
+      # dorny fails otherwise
+      - name: Mark repo as safe for git
+        run: git config --global --add safe.directory "$(pwd)"
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
         with:
-          name: unittest-results
+          name: Unit Tests
           path: results.xml
+          reporter: java-junit
 
       - name: Upload coverage results
         uses: actions/upload-artifact@v4
@@ -70,19 +79,26 @@ jobs:
             ./coverage_clean.info
             out/
 
-  release:
-    runs-on: release
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build release binary
+      - name: Fail if tests failed
+        if: env.TEST_FAILED == 'true'
         run: |
-          make release
+          echo "Unit tests failed!"
+          exit 1
 
-      - name: Upload release binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: luxbot
-          path: |
-            ./bin/luxbot
+            #  release:
+            #    runs-on: release
+            #    needs: build
+            #    steps:
+            #      - uses: actions/checkout@v4
+            #
+            #      - name: Build release binary
+            #        run: |
+            #          make release
+            #
+            #      - name: Upload release binary
+            #        uses: actions/upload-artifact@v4
+            #        with:
+            #          name: luxbot
+            #          path: |
+            #            ./bin/luxbot
+            #

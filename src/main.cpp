@@ -10,11 +10,11 @@
 #include <map>
 #include <cstring>
 
-#include "json.hpp"
-#include "lux_utils.h"
-#include "discord_postman.h"
-#include "discord_bot.h"
-#include "engine.h"
+#include "ext/json.hpp"
+#include "include/lux_utils.h"
+#include "include/discord_postman.h"
+#include "include/discord_bot.h"
+#include "include/engine.h"
 
 namespace luxbracer {
     typedef struct {
@@ -32,7 +32,8 @@ namespace luxbracer {
     //     bot.post_message("syslog", "here");
     // }
 
-    void from_json(const nlohmann::json& j, lux_conf_t & c) {  // NOLINT(runtime/references)
+    void from_json(const nlohmann::json& j,
+                    lux_conf_t & c) {  // NOLINT(runtime/references)
         j.at("bot_token").get_to(c.bot_token);
     }
 

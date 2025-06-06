@@ -10,7 +10,7 @@ fi
 
 parse_variable() {
     # no functions or variables marked as non serializable
-    if egrep -q '\(|no_serial' <<< "$1"
+    if egrep -q '\(|no_serial|\)' <<< "$1"
     then
         return
     fi

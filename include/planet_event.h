@@ -1,22 +1,25 @@
 /*
  * Copyright 2025 Stavros Mantzouneas
  */
-#ifndef PLANET_EVENT_H
-#define PLANET_EVENT_H
+#ifndef INCLUDE_PLANET_EVENT_H_
+#define INCLUDE_PLANET_EVENT_H_
 
-#include "json.hpp"
-#include "lux_types.h"
-#include "lux_utils.h"
+#include <string>
+
+#include "ext/json.hpp"
+#include "include/lux_types.h"
+#include "include/lux_utils.h"
 
 namespace luxbracer {
-    class PlanetEvent {
-        private:
-            std::string name;
-        public:
-            friend void from_json(const nlohmann::json& j, PlanetEvent & pe) {
-                j.at("name").get_to(pe.name);
-            }
-    };
-}
+class PlanetEvent {
+ private:
+  std::string name;
+ public:
+  friend void from_json(const nlohmann::json& j, \
+                        PlanetEvent & pe) {  // NOLINT(runtime/references)
+    j.at("name").get_to(pe.name);
+  }
+};
+}  // namespace luxbracer
 
-#endif /* PLANET_EVENT_H */
+#endif  // INCLUDE_PLANET_EVENT_H_

@@ -1,6 +1,6 @@
-#include "catch.hpp"
-#include "json.hpp"
-#include "engine.h"
+#include "ext/catch.hpp"
+#include "ext/json.hpp"
+#include "include/engine.h"
 
 namespace luxbracer {
     struct EngineTestcase {

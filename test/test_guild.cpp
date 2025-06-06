@@ -1,5 +1,5 @@
-#include "catch.hpp"
-#include "discord_guild.h"
+#include "ext/catch.hpp"
+#include "include/discord_guild.h"
 
 namespace luxbracer {
     struct GuildTestcase {
